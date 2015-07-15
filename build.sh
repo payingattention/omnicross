@@ -19,6 +19,12 @@ get_stuff()
 }
 #get_stuff
 
+clean()
+{
+	sudo rm -rf binutils-2.24 build-binutils build-gcc build-glibc cloog-0.18.1 gcc-4.9.2  glibc-2.20 gmp-6.0.0 isl-0.12.2  linux-3.17.2  mpc-1.0.2 mpfr-3.1.2 /opt/cross/ isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+}
+clean
+
 unpackstuff()
 {
 	for f in *.tar*

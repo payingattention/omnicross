@@ -1,10 +1,10 @@
 #!/bin/sh
 
-#MYTARGET="i586-elf-linux-gnu"
-MYTARGET="aarch64-linux"
-
-#echo logging to logfile.txt
-#exec 1> logfile.txt
+MYTARG="aarch64-linux"
+MYJOBS="-j8"
+#MYTARG="i586-elf-linux"
+#MYTARG="x86_64-elf-linux"
+#MYTARG="x86_64-pc-gnu"
 
 get_stuff()
 {
@@ -27,7 +27,10 @@ get_stuff()
 
 clean()
 {
-	sudo rm -rf binutils-2.24 build-binutils build-gcc build-glibc cloog-0.18.1 gcc-4.9.2  glibc-2.20 gmp-6.0.0 isl-0.12.2  linux-3.17.2  mpc-1.0.2 mpfr-3.1.2 /opt/cross/ isl gmp cloog mpc mpfr a.out
+        sudo rm -rf binutils-2.24 build-binutils build-gcc \
+	build-glibc cloog-0.18.1 gcc-4.9.2  glibc-2.20 gmp-6.0.0 \
+	isl-0.12.2  linux-3.17.2  mpc-1.0.2 mpfr-3.1.2 /opt/cross/ \
+	isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
 }
 clean
 
@@ -45,8 +48,8 @@ makesomelinks()
 	ln -s ../mpfr-3.1.2 mpfr
 	ln -s ../gmp-6.0.0 gmp
 	ln -s ../mpc-1.0.2 mpc
-	ln -s ../isl-0.12.2 isl
-	ln -s ../cloog-0.18.1 cloog
+	#ln -s ../isl-0.12.2 isl
+	#ln -s ../cloog-0.18.1 cloog
 	cd ..
 }
 makesomelinks
@@ -68,30 +71,36 @@ binutilsstage()
 	cd build-binutils
 	../binutils-2.24/configure \
 	--prefix=/opt/cross \
-	--target=$MYTARGET \
+	--target=$MYTARG \
 	--disable-multilib
-	make -j4
+	make "$MYJOBS"
 	make install
 	cd ..
 }
 binutilsstage
 linuxstage()
 {
+	# add code to identify ARCH from MYTARG here ..
 	cd linux-3.17.2
-	make ARCH=arm64 INSTALL_HDR_PATH=/opt/cross/$MYTARGET headers_install
+	make ARCH=arm64 INSTALL_HDR_PATH=/opt/cross/$MYTARG headers_install
+	#make ARCH=x86_64 INSTALL_HDR_PATH=/opt/cross/$MYTARG headers_install
+	#make INSTALL_HDR_PATH=/opt/cross/$MYTARG headers_install
+	#make ARCH=i386 INSTALL_HDR_PATH=/opt/cross/$MYTARG headers_install
 	cd ..
 }
 linuxstage
+
+
 gccstage()
 {
 	mkdir -p build-gcc
 	cd build-gcc
 	../gcc-4.9.2/configure \
 	--prefix=/opt/cross \
-	--target=$MYTARGET \
+	--target=$MYTARG \
 	--enable-languages=c,c++ \
 	--disable-multilib
-	make -j4 all-gcc
+	make "$MYJOBS" all-gcc
 	make install-gcc
 	cd ..
 }
@@ -102,19 +111,20 @@ clibandheaderstage()
 	mkdir -p build-glibc
 	cd build-glibc
 	../glibc-2.20/configure \
-	--prefix=/opt/cross/e\
+	--prefix=/opt/cross/$MYTARG \
 	--build=$MACHTYPE \
-	--host=$MYTARGET \
-	--target=$MYTARGET \
-	--with-headers=/opt/cross/$MYTARGET/include \
+	--host=$MYTARG \
+	--target=$MYTARG \
+	--with-headers=/opt/cross/$MYTARG/include \
 	--disable-multilib libc_cv_forced_unwind=yes
+
 	make install-bootstrap-headers=yes install-headers
-	make -j4 csu/subdir_lib
-	install csu/crt1.o csu/crti.o csu/crtn.o /opt/cross/$MYTARGET/lib
-	$MYTARGET-gcc \
+	make "$MYJOBS" csu/subdir_lib
+	install csu/crt1.o csu/crti.o csu/crtn.o /opt/cross/$MYTARG/lib
+	$MYTARG-gcc \
 	-nostdlib \
-	-nostartfiles -shared -x c /dev/null -o /opt/cross/$MYTARGET/lib/libc.so
-	touch /opt/cross/$MYTARGET/include/gnu/stubs.h
+	-nostartfiles -shared -x c /dev/null -o /opt/cross/$MYTARG/lib/libc.so
+	touch /opt/cross/$MYTARG/include/gnu/stubs.h
 	cd ..
 }
 clibandheaderstage
@@ -122,7 +132,7 @@ clibandheaderstage
 compiliersupportstage()
 {
 	cd build-gcc
-	make -j4 all-target-libgcc
+	make "$MYJOBS" all-target-libgcc
 	make install-target-libgcc
 	cd ..  
 }
@@ -131,7 +141,7 @@ compiliersupportstage
 standardclibstage()
 {
 	cd build-glibc
-	make -j4
+	make "$MYJOBS"
 	make install
 	cd ..
 }
