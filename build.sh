@@ -1,27 +1,59 @@
 #!/bin/sh
 
+#MYTARG="aarch64-linux"
+#MYLINUXARCH="arm64"
+MYTARG="i586-linux"
+MYLINUXARCH="x86"
+MYJOBS="-j8"
+MYPREF="/opt/cross"
+MYCONF="--disable-multilib"
+#MYCONF="--disable-multilib --disable-threads --disable-shared"
+MYBINUTILS="binutils-2.24"
+MYGCC="gcc-4.9.2"
+MYLINUX="linux-3.17.2"
+MYGLIBC="glibc-2.20"
+MYMPFR="mpfr-3.1.2"
+MYGMP="gmp-6.0.0a" 
+MYMPC="mpc-1.0.2"
+MYISL="isl-0.12.2"
+MYCLOOG="cloog-0.18.1"
+
+MYLANGS="c"
+
+MYSTARTDIR="$(pwd)"
+
+
+
+
 get_stuff()
 {
-#	wget http://ftpmirror.gnu.org/binutils/binutils-2.24.tar.gz
-	cp ~/.bldroot/binutils-2.24.tar.bz2 .
-	#wget http://ftpmirror.gnu.org/gcc/gcc-4.9.2/gcc-4.9.2.tar.gzS
-	cp ~/.bldroot/gcc-4.9.2.tar.bz2 .
-	wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.17.2.tar.xz
-	wget http://ftpmirror.gnu.org/glibc/glibc-2.20.tar.xz
-#	wget http://ftpmirror.gnu.org/mpfr/mpfr-3.1.2.tar.xz
-	cp ~/.bldroot/mpfr-3.1.2.tar.xz .
-	#wget http://ftpmirror.gnu.org/gmp/gmp-6.0.0a.tar.xz
-	cp ~/.bldroot/gmp-6.0.0a.tar.xz .
-	#wget http://ftpmirror.gnu.org/mpc/mpc-1.0.2.tar.gz
-	cp ~/.bldroot/mpc-1.0.2.tar.gz .
-	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.12.2.tar.bz2
-	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/cloog-0.18.1.tar.gz 
+#	wget http://ftpmirror.gnu.org/binutils/${MYBINUTILS}.tar.gz
+	cp src/${MYBINUTILS}.tar.bz2 .
+	#wget http://ftpmirror.gnu.org/gcc/${MYGCC}/${MYGCC}.tar.gzS
+	cp src/${MYGCC}.tar.bz2 .
+	#wget https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz
+	cp cp src/${MYLINUX}.tar.xz .
+	#wget http://ftpmirror.gnu.org/glibc/${MYGLIBC}.tar.xz
+	cp cp src/${MYGLIBC}.tar.xz .
+	#wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz
+	cp src/${MYMPFR}.tar.xz .
+	#wget http://ftpmirror.gnu.org/gmp/${MYGMP}.tar.xz
+	cp src/${MYGMP}.tar.xz .
+	#wget http://ftpmirror.gnu.org/mpc/${MYMPC}.tar.gz
+	cp src/${MYMPC}.tar.gz .
+	#wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYISL}.tar.bz2
+	cp src/${MYISL}.tar.bz2 .
+	#wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYCLOOG}.tar.gz 
+	cp src/${MYCLOOG}.tar.gz .
 }
 #get_stuff
 
 clean()
 {
-	sudo rm -rf binutils-2.24 build-binutils build-gcc build-glibc cloog-0.18.1 gcc-4.9.2  glibc-2.20 gmp-6.0.0 isl-0.12.2  linux-3.17.2  mpc-1.0.2 mpfr-3.1.2 /opt/cross/ isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+        sudo rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC}  ${MYGLIBC} \
+	${MYISL}  ${MYLINUX}  ${MYMPC} ${MYMPFR} ${MYPREF} \
+	build-glibc build-binutils build-gcc  gmp-6.0.0 \
+	isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
 }
 clean
 
@@ -35,59 +67,63 @@ unpackstuff
 
 makesomelinks()
 {
-	cd gcc-4.9.2
-	ln -s ../mpfr-3.1.2 mpfr
+	cd ${MYGCC}
+	ln -s ../${MYMPFR} mpfr
 	ln -s ../gmp-6.0.0 gmp
-	ln -s ../mpc-1.0.2 mpc
-	ln -s ../isl-0.12.2 isl
-	ln -s ../cloog-0.18.1 cloog
-	cd ..
+	ln -s ../${MYMPC} mpc
+	#ln -s ../${MYISL} isl
+	#ln -s ../${MYCLOOG} cloog
+	cd "${MYSTARTDIR}"
 }
 makesomelinks
 
 makesysroot()
 {
-	sudo mkdir -p /opt/cross
-	sudo chown $USER /opt/cross
+	sudo mkdir -p ${MYPREF}
+	sudo chown $USER ${MYPREF}
 }
 makesysroot
+
 modifypath()
 {
-	export PATH=/opt/cross/bin:$PATH
+	export PATH=${MYPREF}/bin:$PATH
 }
 modifypath
+
 binutilsstage()
 {
 	mkdir build-binutils
 	cd build-binutils
-	../binutils-2.24/configure \
-	--prefix=/opt/cross \
-	--target=aarch64-linux \
-	--disable-multilib
-	make -j4
+	../${MYBINUTILS}/configure \
+	--prefix=${MYPREF} \
+	--target=${MYTARG} \
+	${MYCONF}
+	make "${MYJOBS}"
 	make install
-	cd ..
+	cd "${MYSTARTDIR}"
 }
 binutilsstage
+
 linuxstage()
-{
-	cd linux-3.17.2
-	make ARCH=arm64 INSTALL_HDR_PATH=/opt/cross/aarch64-linux headers_install
-	cd ..
+{ 
+	cd ${MYLINUX}
+	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install 
+	cd "${MYSTARTDIR}"
 }
-linuxstage
+linuxstage 
+
 gccstage()
 {
 	mkdir -p build-gcc
 	cd build-gcc
-	../gcc-4.9.2/configure \
-	--prefix=/opt/cross \
-	--target=aarch64-linux \
-	--enable-languages=c,c++ \
-	--disable-multilib
-	make -j4 all-gcc
+	../${MYGCC}/configure \
+	--prefix=${MYPREF} \
+	--target=${MYTARG} \
+	--enable-languages=${MYLANGS} \
+        ${MYCONF} 
+	make "${MYJOBS}" all-gcc
 	make install-gcc
-	cd ..
+	cd "${MYSTARTDIR}"
 }
 gccstage
 
@@ -95,39 +131,42 @@ clibandheaderstage()
 {
 	mkdir -p build-glibc
 	cd build-glibc
-	../glibc-2.20/configure \
-	--prefix=/opt/cross/aarch64-linux \
+	../${MYGLIBC}/configure \
+	--prefix=${MYPREF}/${MYTARG} \
 	--build=$MACHTYPE \
-	--host=aarch64-linux \
-	--target=aarch64-linux \
-	--with-headers=/opt/cross/aarch64-linux/include \
-	--disable-multilib libc_cv_forced_unwind=yes
+	--host=${MYTARG} \
+	--target=${MYTARG} \
+	--with-headers=${MYPREF}/${MYTARG}/include \
+	${MYCONF} libc_cv_forced_unwind=yes
+
 	make install-bootstrap-headers=yes install-headers
-	make -j4 csu/subdir_lib
-	install csu/crt1.o csu/crti.o csu/crtn.o /opt/cross/aarch64-linux/lib
-	aarch64-linux-gcc \
+	make "${MYJOBS}" csu/subdir_lib
+	install csu/crt1.o csu/crti.o csu/crtn.o ${MYPREF}/${MYTARG}/lib
+	${MYTARG}-gcc \
 	-nostdlib \
-	-nostartfiles -shared -x c /dev/null -o /opt/cross/aarch64-linux/lib/libc.so
-	touch /opt/cross/aarch64-linux/include/gnu/stubs.h
-	cd ..
+	-nostartfiles -shared -x c /dev/null -o ${MYPREF}/${MYTARG}/lib/libc.so
+	touch ${MYPREF}/${MYTARG}/include/gnu/stubs.h
+	touch ${MYPREF}/${MYTARG}/include/gnu/stubs-32.h
+	cd "${MYSTARTDIR}"
 }
 clibandheaderstage
 
 compiliersupportstage()
 {
 	cd build-gcc
-	make -j4 all-target-libgcc
+	make "${MYJOBS}" all-target-libgcc
 	make install-target-libgcc
-	cd ..  
+	cd "${MYSTARTDIR}"
 }
 compiliersupportstage
 
 standardclibstage()
 {
 	cd build-glibc
-	make -j4
+	make "${MYJOBS}"
 	make install
-	cd ..
+	"${MYSTARTDIR}"
+	cd "${MYSTARTDIR}"
 }
 standardclibstage
 
