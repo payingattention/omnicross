@@ -1,9 +1,15 @@
 #!/bin/sh
 
-#MYTARG="aarch64-linux"
-#MYLINUXARCH="arm64"
-MYTARG="i586-linux"
-MYLINUXARCH="x86"
+# aarch64
+	#MYTARG="aarch64-linux"
+	#MYLINUXARCH="arm64"
+# i586
+	MYTARG="i586-linux"
+	MYLINUXARCH="x86"
+# x86_64
+	#MYTARG="x86_64-linux"
+	#MYLINUXARCH="x86_64"
+
 MYJOBS="-j8"
 MYPREF="/opt/cross"
 MYCONF="--disable-multilib"
@@ -18,9 +24,12 @@ MYMPC="mpc-1.0.2"
 MYISL="isl-0.12.2"
 MYCLOOG="cloog-0.18.1"
 
-MYLANGS="c"
+#MYLANGS="c"
+MYLANGS="c,c++"
 
 MYSTARTDIR="$(pwd)"
+
+MYSRC="$(pwd)/src"
 
 
 
@@ -58,7 +67,7 @@ clean()
 clean
 
 unpackstuff()
-{
+{ 
 	for f in *.tar*
 	do 	tar xf "$f"
 	done
@@ -145,8 +154,12 @@ clibandheaderstage()
 	${MYTARG}-gcc \
 	-nostdlib \
 	-nostartfiles -shared -x c /dev/null -o ${MYPREF}/${MYTARG}/lib/libc.so
+
+	# stubs are required
 	touch ${MYPREF}/${MYTARG}/include/gnu/stubs.h
 	touch ${MYPREF}/${MYTARG}/include/gnu/stubs-32.h
+	touch ${MYPREF}/${MYTARG}/include/gnu/stubs-64.h
+
 	cd "${MYSTARTDIR}"
 }
 clibandheaderstage
