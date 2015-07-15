@@ -1,19 +1,26 @@
 #!/bin/sh
 
-MYTARG="aarch64-linux"
+#MYTARG="aarch64-linux"
+#MYLINUXARCH="arm64"
+MYTARG="i586-linux"
+MYLINUXARCH="x86"
 MYJOBS="-j8"
 MYPREF="/opt/cross"
 MYCONF="--disable-multilib"
+#MYCONF="--disable-multilib --disable-threads --disable-shared"
 MYBINUTILS="binutils-2.24"
 MYGCC="gcc-4.9.2"
 MYLINUX="linux-3.17.2"
 MYGLIBC="glibc-2.20"
 MYMPFR="mpfr-3.1.2"
-MYGMP="gmp-6.0.0a"
-MYLINUXARCH="arm64"
+MYGMP="gmp-6.0.0a" 
 MYMPC="mpc-1.0.2"
-MYISL="isl-0.12"
-MYCLOOG="cloog-0.18"
+MYISL="isl-0.12.2"
+MYCLOOG="cloog-0.18.1"
+
+MYLANGS="c"
+
+MYSTARTDIR="$(pwd)"
 #MYTARG="i586-elf-linux"
 #MYTARG="x86_64-elf-linux"
 #MYTARG="x86_64-pc-gnu"
@@ -21,27 +28,31 @@ MYCLOOG="cloog-0.18"
 get_stuff()
 {
 #	wget http://ftpmirror.gnu.org/binutils/${MYBINUTILS}.tar.gz
-	cp ~/.bldroot/${MYBINUTILS}.tar.bz2 .
+	cp src/${MYBINUTILS}.tar.bz2 .
 	#wget http://ftpmirror.gnu.org/gcc/${MYGCC}/${MYGCC}.tar.gzS
-	cp ~/.bldroot/${MYGCC}.tar.bz2 .
-	wget https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz
-	wget http://ftpmirror.gnu.org/glibc/${MYGLIBC}.tar.xz
-#	wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz
-	cp ~/.bldroot/${MYMPFR}.tar.xz .
+	cp src/${MYGCC}.tar.bz2 .
+	#wget https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz
+	cp cp src/${MYLINUX}.tar.xz .
+	#wget http://ftpmirror.gnu.org/glibc/${MYGLIBC}.tar.xz
+	cp cp src/${MYGLIBC}.tar.xz .
+	#wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz
+	cp src/${MYMPFR}.tar.xz .
 	#wget http://ftpmirror.gnu.org/gmp/${MYGMP}.tar.xz
-	cp ~/.bldroot/${MYGMP}.tar.xz .
+	cp src/${MYGMP}.tar.xz .
 	#wget http://ftpmirror.gnu.org/mpc/${MYMPC}.tar.gz
-	cp ~/.bldroot/${MYMPC}.tar.gz .
-	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYISL}.2.tar.bz2
-	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYCLOOG}.1.tar.gz 
+	cp src/${MYMPC}.tar.gz .
+	#wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYISL}.tar.bz2
+	cp src/${MYISL}.tar.bz2 .
+	#wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYCLOOG}.tar.gz 
+	cp src/${MYCLOOG}.tar.gz .
 }
 #get_stuff
 
 clean()
 {
-        sudo rm -rf ${MYBINUTILS} build-binutils build-gcc \
-	build-glibc ${MYCLOOG}.1 ${MYGCC}  ${MYGLIBC} gmp-6.0.0 \
-	${MYISL}.2  ${MYLINUX}  ${MYMPC} ${MYMPFR} ${MYPREF}/ \
+        sudo rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC}  ${MYGLIBC} \
+	${MYISL}  ${MYLINUX}  ${MYMPC} ${MYMPFR} ${MYPREF} \
+	build-glibc build-binutils build-gcc  gmp-6.0.0 \
 	isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
 }
 clean
@@ -60,8 +71,8 @@ makesomelinks()
 	ln -s ../${MYMPFR} mpfr
 	ln -s ../gmp-6.0.0 gmp
 	ln -s ../${MYMPC} mpc
-	#ln -s ../${MYISL}.2 isl
-	#ln -s ../${MYCLOOG}.1 cloog
+	#ln -s ../${MYISL} isl
+	#ln -s ../${MYCLOOG} cloog
 	cd ..
 }
 makesomelinks
@@ -91,13 +102,9 @@ binutilsstage()
 }
 binutilsstage
 linuxstage()
-{
-	# add code to identify ARCH from MYTARG here ..
+{ 
 	cd ${MYLINUX}
-	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
-	#make ARCH=x86_64 INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
-	#make INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
-	#make ARCH=i386 INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
+	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install 
 	cd ..
 }
 linuxstage
@@ -110,8 +117,10 @@ gccstage()
 	../${MYGCC}/configure \
 	--prefix=${MYPREF} \
 	--target=${MYTARG} \
-	--enable-languages=c,c++ \
-	${MYCONF}
+	--enable-languages=${MYLANGS} \
+        ${MYCONF}
+	#--enable-languages=c,c++ \
+	#${MYCONF}
 	make "${MYJOBS}" all-gcc
 	make install-gcc
 	cd ..
@@ -137,6 +146,7 @@ clibandheaderstage()
 	-nostdlib \
 	-nostartfiles -shared -x c /dev/null -o ${MYPREF}/${MYTARG}/lib/libc.so
 	touch ${MYPREF}/${MYTARG}/include/gnu/stubs.h
+	touch ${MYPREF}/${MYTARG}/include/gnu/stubs-32.h
 	cd ..
 }
 clibandheaderstage
