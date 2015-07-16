@@ -1,13 +1,25 @@
 # build
 
-Build is a tool I am writing to help me 
-keep track of my ideas about cross compiling
-and building toolchains.
+Build a cross compiler
+
+	git clone https://github.com/cmgraff/build
+	cd build
+	./build.sh
 
 
-building with:
-make -v
+
+
+
+
+
+These are the versions of various tools I used to build this script.
+They are here for documentation purposes so that the steps can be
+reproduced at a later date if needed.
+
+
+date
 Wed Jul 15 17:27:55 CDT 2015
+
 make -v
 GNU Make 3.81 
 This program built for x86_64-pc-linux-gnu

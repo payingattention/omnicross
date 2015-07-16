@@ -67,6 +67,8 @@ clean()
 }
 clean
 
+exit
+
 
 
 unpackstuff()
@@ -91,9 +93,13 @@ makesomelinks
 
 makesysroot()
 {
-	mkdir -p ${MYPREF}
-	#sudo mkdir -p ${MYPREF}
-	#sudo chown $USER ${MYPREF}
+	mkdir -p ${MYPREF} 
+	# allow the  to install outside of /home
+	if ! [ -d ${MYPREF} ]
+	then 	sudo mkdir -p ${MYPREF} || exit 1
+		sudo chown $USER ${MYPREF}
+	fi
+
 }
 makesysroot 
 
