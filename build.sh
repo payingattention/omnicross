@@ -11,7 +11,8 @@
 	#MYLINUXARCH="x86_64"
 
 MYJOBS="-j8"
-MYPREF="/opt/cross"
+#MYPREF="/opt/cross"
+MYPREF="$(pwd)/toolchain/"
 MYCONF="--disable-multilib"
 #MYCONF="--disable-multilib --disable-threads --disable-shared"
 MYBINUTILS="binutils-2.24"
@@ -59,17 +60,19 @@ get_stuff()
 
 clean()
 {
-        sudo rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC}  ${MYGLIBC} \
+        rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC}  ${MYGLIBC} \
 	${MYISL}  ${MYLINUX}  ${MYMPC} ${MYMPFR} ${MYPREF} \
 	build-glibc build-binutils build-gcc  gmp-6.0.0 \
 	isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
 }
 clean
 
+
+
 unpackstuff()
 { 
-	for f in *.tar*
-	do 	tar xf "$f"
+	for MYTARBALL in ${MYSRC}/*.tar*
+	do 	tar -xf "$MYTARBALL"
 	done
 }
 unpackstuff
@@ -88,10 +91,11 @@ makesomelinks
 
 makesysroot()
 {
-	sudo mkdir -p ${MYPREF}
-	sudo chown $USER ${MYPREF}
+	mkdir -p ${MYPREF}
+	#sudo mkdir -p ${MYPREF}
+	#sudo chown $USER ${MYPREF}
 }
-makesysroot
+makesysroot 
 
 modifypath()
 {
@@ -116,7 +120,7 @@ binutilsstage
 linuxstage()
 { 
 	cd ${MYLINUX}
-	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install 
+	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
 	cd "${MYSTARTDIR}"
 }
 linuxstage 
@@ -177,8 +181,7 @@ standardclibstage()
 {
 	cd build-glibc
 	make "${MYJOBS}"
-	make install
-	"${MYSTARTDIR}"
+	make install 
 	cd "${MYSTARTDIR}"
 }
 standardclibstage
