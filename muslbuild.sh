@@ -5,12 +5,14 @@ set -ex
 #http://ftp.gnu.org/gnu/binutils/binutils-2.25.tar.bz2
 #http://ftp.barfooze.de/pub/sabotage/tarballs/kernel-headers-3.12.6-5.tar.xz 
 
-#ARCH="i586"
-	#MYLINUXARCH="x86"
-ARCH="x86_64" 
-	MYLINUXARCH="x86_64"
+# i586
+	ARCH="i586"
+	MYLINUXARCH="x86"
+# x86_64
+	#ARCH="x86_64" 
+	#MYLINUXARCH="x86_64"
 
-MYPREF="$(pwd)/toolchain" 
+MYPREF="$(pwd)/toolchain/" 
 MYGMP="gmp-4.3.2"
 MYMPC="mpc-0.8.1"
 MYMPFR="mpfr-2.4.2"
@@ -23,18 +25,17 @@ MYSRC="$(pwd)/src"
 MYGCC="gcc-4.9.2"
 MYKERNELHEADERS="kernel-headers-3.12.6-5"
 MYMUSL="musl-1.1.6" 
-CC_PREFIX="${MYPREF}/${MYTARG}" 
+PREFIX="${MYPREF}/${MYTARG}/" 
 
-export PATH="${CC_PREFIX}/bin:${PATH}" 
+
+export PATH="${PREFIX}/bin:${PATH}" 
 
 
 MYGCCFLAGS="--disable-multilib --with-multilib-list="
 if [ "$ARCH" = "x32" ]
 then 	MYGCCFLAGS="--with-multilib-list=mx32"
-fi 
+fi
 
-
-PREFIX="$CC_PREFIX" 
 
 mkdir -p "${PREFIX}/${MYTARG}" 
 
@@ -126,8 +127,7 @@ muslstage()
 	make "${MYJOBS}"
         make install
 
-        cd "${MYSTARTDIR}" 
-	
+        cd "${MYSTARTDIR}"
 
 	# gcc 2
 	if [ ! -e "$PREFIX/${MYTARG}/lib/libc.so" ]
