@@ -7,7 +7,8 @@ set -ex
 
 # i586
 	ARCH="i586"
-	MYLINUXARCH="x86"
+	MYLINUXARCH="x86" 
+
 # x86_64
 	#ARCH="x86_64" 
 	#MYLINUXARCH="x86_64"
@@ -24,20 +25,15 @@ MYBINUTILS="binutils-2.25"
 MYSRC="$(pwd)/src"
 MYGCC="gcc-4.9.2"
 MYKERNELHEADERS="kernel-headers-3.12.6-5"
-MYMUSL="musl-1.1.6" 
+MYMUSL="musl-1.1.6"
 PREFIX="${MYPREF}/${MYTARG}/" 
-
 
 export PATH="${PREFIX}/bin:${PATH}" 
 
+#MYGCCFLAGS="--disable-multilib --with-multilib-list="
+MYGCCFLAGS="--with-multilib-list=mx32"
 
-MYGCCFLAGS="--disable-multilib --with-multilib-list="
-if [ "$ARCH" = "x32" ]
-then 	MYGCCFLAGS="--with-multilib-list=mx32"
-fi
-
-
-mkdir -p "${PREFIX}/${MYTARG}" 
+mkdir -p "${PREFIX}/${MYTARG}"
 
 # binutils 
 binutilsstage()
