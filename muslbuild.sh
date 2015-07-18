@@ -106,7 +106,7 @@ kernelheadersstage()
 {
 	tar -xf "${MYSRC}/${MYKERNELHEADERS}.tar.xz"
 	cd "${MYKERNELHEADERS}"
-	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$CC_PREFIX/${MYTARG}"
+	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$PREFIX/${MYTARG}"
 	cd "${MYSTARTDIR}"
 }
 kernelheadersstage 
@@ -129,10 +129,12 @@ muslstage()
 
         cd "${MYSTARTDIR}" 
 
-	PREFIX="$CC_PREFIX" 
+	#PREFIX="$CC_PREFIX" 
+
 
 	
-	if [ ! -e "$CC_PREFIX/${MYTARG}/lib/libc.so" ]
+	#if [ ! -e "$CC_PREFIX/${MYTARG}/lib/libc.so" ]
+	if [ ! -e "$PREFIX/${MYTARG}/lib/libc.so" ]
 	then 	MYGCCFLAGS="${MYGCCFLAGS} --disable-shared "
 	fi
 

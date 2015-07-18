@@ -10,11 +10,10 @@
 	#MYTARG="x86_64-linux"
 	#MYLINUXARCH="x86_64"
 
-MYJOBS="-j8"
-#MYPREF="/opt/cross"
+MYJOBS="-j8" 
 MYPREF="$(pwd)/toolchain/"
 MYCONF="--disable-multilib"
-#MYCONF="--disable-multilib --disable-threads --disable-shared"
+	#"--disable-multilib --disable-threads --disable-shared"
 MYBINUTILS="binutils-2.24"
 MYGCC="gcc-4.9.2"
 MYLINUX="linux-3.17.2"
@@ -23,63 +22,51 @@ MYMPFR="mpfr-3.1.2"
 MYGMP="gmp-6.0.0a" 
 MYMPC="mpc-1.0.2"
 MYISL="isl-0.12.2"
-MYCLOOG="cloog-0.18.1"
-
-#MYLANGS="c"
-MYLANGS="c,c++"
-
-MYSTARTDIR="$(pwd)"
-
+MYCLOOG="cloog-0.18.1" 
+MYLANGS="c,c++" 
+MYSTARTDIR="$(pwd)" 
 MYSRC="$(pwd)/src"
 
 
 
 
-get_stuff()
+get_components()
 {
-#	wget http://ftpmirror.gnu.org/binutils/${MYBINUTILS}.tar.gz
-	cp src/${MYBINUTILS}.tar.bz2 .
-	#wget http://ftpmirror.gnu.org/gcc/${MYGCC}/${MYGCC}.tar.gzS
-	cp src/${MYGCC}.tar.bz2 .
-	#wget https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz
-	cp cp src/${MYLINUX}.tar.xz .
-	#wget http://ftpmirror.gnu.org/glibc/${MYGLIBC}.tar.xz
-	cp cp src/${MYGLIBC}.tar.xz .
-	#wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz
-	cp src/${MYMPFR}.tar.xz .
-	#wget http://ftpmirror.gnu.org/gmp/${MYGMP}.tar.xz
-	cp src/${MYGMP}.tar.xz .
-	#wget http://ftpmirror.gnu.org/mpc/${MYMPC}.tar.gz
-	cp src/${MYMPC}.tar.gz .
-	#wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYISL}.tar.bz2
-	cp src/${MYISL}.tar.bz2 .
-	#wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYCLOOG}.tar.gz 
-	cp src/${MYCLOOG}.tar.gz .
+
+	cd ${MYSRC}
+	wget http://ftpmirror.gnu.org/binutils/${MYBINUTILS}.tar.gz
+	wget http://ftpmirror.gnu.org/gcc/${MYGCC}/${MYGCC}.tar.gzS 
+	wget https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz 
+	wget http://ftpmirror.gnu.org/glibc/${MYGLIBC}.tar.xz 
+	wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz 
+	wget http://ftpmirror.gnu.org/gmp/${MYGMP}.tar.xz 
+	wget http://ftpmirror.gnu.org/mpc/${MYMPC}.tar.gz 
+	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYISL}.tar.bz2 
+	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYCLOOG}.tar.gz 
+	cd "${MYSTARTDIR}"
 }
-#get_stuff
+#get_components
 
 clean()
 {
-        rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC}  ${MYGLIBC} \
-	${MYISL}  ${MYLINUX}  ${MYMPC} ${MYMPFR} ${MYPREF} \
-	build-glibc build-binutils build-gcc  gmp-6.0.0 \
-	isl gmp cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+        rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC} ${MYGLIBC} \
+	${MYISL} ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} \
+	build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
+	cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
 }
-clean
-
-exit
+clean 
 
 
 
-unpackstuff()
+unpack_components()
 { 
 	for MYTARBALL in ${MYSRC}/*.tar*
 	do 	tar -xf "$MYTARBALL"
 	done
 }
-unpackstuff
+unpack_components
 
-makesomelinks()
+link_components()
 {
 	cd ${MYGCC}
 	ln -s ../${MYMPFR} mpfr
@@ -89,7 +76,7 @@ makesomelinks()
 	#ln -s ../${MYCLOOG} cloog
 	cd "${MYSTARTDIR}"
 }
-makesomelinks
+link_components
 
 makesysroot()
 {
@@ -113,7 +100,7 @@ binutilsstage()
 {
 	mkdir build-binutils
 	cd build-binutils
-	../${MYBINUTILS}/configure \
+	${MYSTARTDIR}/${MYBINUTILS}/configure \
 	--prefix=${MYPREF} \
 	--target=${MYTARG} \
 	${MYCONF}
@@ -133,9 +120,9 @@ linuxstage
 
 gccstage()
 {
-	mkdir -p build-gcc
+	mkdir build-gcc
 	cd build-gcc
-	../${MYGCC}/configure \
+	${MYSTARTDIR}/${MYGCC}/configure \
 	--prefix=${MYPREF} \
 	--target=${MYTARG} \
 	--enable-languages=${MYLANGS} \
@@ -150,7 +137,7 @@ clibandheaderstage()
 {
 	mkdir -p build-glibc
 	cd build-glibc
-	../${MYGLIBC}/configure \
+	${MYSTARTDIR}/${MYGLIBC}/configure \
 	--prefix=${MYPREF}/${MYTARG} \
 	--build=$MACHTYPE \
 	--host=${MYTARG} \
