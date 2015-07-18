@@ -12,7 +12,9 @@ MYMPC="mpc-0.8.1"
 MYMPFR="mpfr-2.4.2"
 MYSTARTDIR="$(pwd)"
 MYJOBS="-j8" 
-ARCH="i586"
+#ARCH="i586"
+ARCH="x86_64"
+
 MYTARG="$ARCH-linux-musl"
 MYLANGS="c" 
 MYBINUTILS="binutils-2.25"
@@ -20,7 +22,8 @@ MYSRC="$(pwd)/src"
 MYGCC="gcc-4.9.2"
 MYKERNELHEADERS="kernel-headers-3.12.6-5"
 MYMUSL="musl-1.1.6" 
-MYLINUXARCH="x86"
+#MYLINUXARCH="x86"
+MYLINUXARCH="x86_64"
 
 
 CC_PREFIX="${MYPREF}/${MYTARG}" 
@@ -37,7 +40,7 @@ PREFIX="$CC_PREFIX"
 
 # sysroot usr 
 mkdir -p "${PREFIX}/${MYTARG}"
-ln -sf . "${PREFIX}/${MYTARG}/usr"
+#ln -sf . "${PREFIX}/${MYTARG}/usr"
 
 # binutils 
 binutilsstage()
@@ -128,12 +131,8 @@ muslstage()
         make install
 
         cd "${MYSTARTDIR}" 
-
-	#PREFIX="$CC_PREFIX" 
-
-
 	
-	#if [ ! -e "$CC_PREFIX/${MYTARG}/lib/libc.so" ]
+	
 	if [ ! -e "$PREFIX/${MYTARG}/lib/libc.so" ]
 	then 	MYGCCFLAGS="${MYGCCFLAGS} --disable-shared "
 	fi
@@ -155,5 +154,3 @@ muslstage()
         cd "${MYSTARTDIR}"
 }
 muslstage
-
-
