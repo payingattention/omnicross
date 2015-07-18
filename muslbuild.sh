@@ -1,10 +1,14 @@
 #!/bin/sh 
 
 set -ex
+# sources (incomplete list):
 #http://ftp.gnu.org/gnu/binutils/binutils-2.25.tar.bz2
-#http://ftp.barfooze.de/pub/sabotage/tarballs/kernel-headers-3.12.6-5.tar.xz
+#http://ftp.barfooze.de/pub/sabotage/tarballs/kernel-headers-3.12.6-5.tar.xz 
 
-
+#ARCH="i586"
+	#MYLINUXARCH="x86"
+ARCH="x86_64" 
+	MYLINUXARCH="x86_64"
 
 MYPREF="$(pwd)/toolchain" 
 MYGMP="gmp-4.3.2"
@@ -12,9 +16,6 @@ MYMPC="mpc-0.8.1"
 MYMPFR="mpfr-2.4.2"
 MYSTARTDIR="$(pwd)"
 MYJOBS="-j8" 
-#ARCH="i586"
-ARCH="x86_64"
-
 MYTARG="$ARCH-linux-musl"
 MYLANGS="c" 
 MYBINUTILS="binutils-2.25"
@@ -22,25 +23,20 @@ MYSRC="$(pwd)/src"
 MYGCC="gcc-4.9.2"
 MYKERNELHEADERS="kernel-headers-3.12.6-5"
 MYMUSL="musl-1.1.6" 
-#MYLINUXARCH="x86"
-MYLINUXARCH="x86_64"
-
-
 CC_PREFIX="${MYPREF}/${MYTARG}" 
 
 export PATH="${CC_PREFIX}/bin:${PATH}" 
+
 
 MYGCCFLAGS="--disable-multilib --with-multilib-list="
 if [ "$ARCH" = "x32" ]
 then 	MYGCCFLAGS="--with-multilib-list=mx32"
 fi 
 
-# Switch to the CC prefix
-PREFIX="$CC_PREFIX"
 
-# sysroot usr 
-mkdir -p "${PREFIX}/${MYTARG}"
-#ln -sf . "${PREFIX}/${MYTARG}/usr"
+PREFIX="$CC_PREFIX" 
+
+mkdir -p "${PREFIX}/${MYTARG}" 
 
 # binutils 
 binutilsstage()
@@ -67,7 +63,6 @@ gcc_stage_one()
 	cd "${MYGCC}"
 	patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
 	cd "${MYSTARTDIR}" 
-
 	
 	tar -xf "${MYSRC}/${MYGMP}.tar.bz2"
 	mv "${MYGMP}" "${MYGCC}/gmp"
@@ -118,6 +113,7 @@ kernelheadersstage
 muslstage()
 { 
 
+	# musl
 	tar -xf "${MYSRC}/${MYMUSL}.tar.gz"
 
 	cd "${MYMUSL}"
@@ -132,12 +128,12 @@ muslstage()
 
         cd "${MYSTARTDIR}" 
 	
-	
-	if [ ! -e "$PREFIX/${MYTARG}/lib/libc.so" ]
-	then 	MYGCCFLAGS="${MYGCCFLAGS} --disable-shared "
-	fi
 
 	# gcc 2
+	if [ ! -e "$PREFIX/${MYTARG}/lib/libc.so" ]
+	then 	MYGCCFLAGS="${MYGCCFLAGS} --disable-shared "
+	fi 
+
 	mkdir build2-gcc
 	cd build2-gcc
 	${MYSTARTDIR}/${MYGCC}/configure \
@@ -154,3 +150,4 @@ muslstage()
         cd "${MYSTARTDIR}"
 }
 muslstage
+
