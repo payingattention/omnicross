@@ -1,17 +1,18 @@
 #!/bin/sh
 
+#set -ex
+
 # aarch64
 	#MYTARG="aarch64-linux"
 	#MYLINUXARCH="arm64"
+
 # i586
 	#MYTARG="i586-linux"
 	#MYLINUXARCH="x86"
+
 # x86_64
 	MYTARG="x86_64-linux"
-	MYLINUXARCH="x86_64"
-
-#set -xe
-
+	MYLINUXARCH="x86_64" 
 
 MYPREF="$(pwd)/toolchain/"
 MYSRC="$(pwd)/src" 
@@ -24,14 +25,16 @@ MYSTARTDIR="$(pwd)"
 MYJOBS="-j8"
 MYLANGS="c,c++" 
 MYLINUX="kernel-headers-3.12.6-5" 
-MYCONF="--disable-multilib" #"--disable-multilib --disable-threads --disable-shared" 
+MYCONF="--disable-multilib --with-multilib-list=" 
+#MYCONF="--with-multilib-list=mx32"
 MYGLIBC="glibc-2.20" 
 SUFFIX="tar.xz"
 
 
 export PATH="${MYPREF}/bin:${PATH}"
+mkdir -p ${MYPREF} 
 
-# https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz
+
 obtain_source_code()
 {
         GNU_MIRROR="https://ftp.gnu.org/gnu"
@@ -72,29 +75,6 @@ clean()
 }
 clean
 
-unpack_components()
-{ 
-	for MYTARBALL in ${MYSRC}/*.tar*
-	do 	tar -xf "$MYTARBALL"
-	done
-}
-#unpack_components
-
-#link_components()
-#{
-#	cd ${MYGCC}
-#	ln -s ../${MYMPFR} mpfr
-#	ln -s ../gmp-6.0.0 gmp
-#	ln -s ../${MYMPC} mpc 
-#	cd "${MYSTARTDIR}"
-#}
-#link_components
-
-makesysroot()
-{
-	mkdir -p ${MYPREF} 
-}
-makesysroot 
 
 binutilsstage()
 {
@@ -104,9 +84,7 @@ binutilsstage()
 	cd build-binutils
 	${MYSTARTDIR}/${MYBINUTILS}/configure \
 	--prefix=${MYPREF} \
-	--target=${MYTARG} \
-	${MYCONF}
-	
+	--target=${MYTARG} 
 	
 	make "${MYJOBS}"
 	make install
@@ -125,18 +103,15 @@ linuxstage
 
 gccstage()
 {
-	tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}"
+	tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}" 
+	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}" 
+	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}" 
+	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
 
-        tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
-       # mv "${MYGMP}" "${MYGCC}/gmp"
-        tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
-       # mv "${MYMPFR}" "${MYGCC}/mpfr"
-        tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
-       # mv "${MYMPC}" "${MYGCC}/mpc"
 	cd ${MYGCC}
-	       ln -s ../${MYMPFR} mpfr
-       ln -s ../${MYGMP} gmp
-       ln -s ../${MYMPC} mpc
+	ln -s ../${MYMPFR} mpfr
+	ln -s ../${MYGMP} gmp
+	ln -s ../${MYMPC} mpc
 	cd "${MYSTARTDIR}"
 
 	mkdir build-gcc
@@ -177,25 +152,19 @@ clibandheaderstage()
 	touch ${MYPREF}/${MYTARG}/include/gnu/stubs-32.h
 	touch ${MYPREF}/${MYTARG}/include/gnu/stubs-64.h
 
-	cd "${MYSTARTDIR}"
-}
-clibandheaderstage
+	cd "${MYSTARTDIR}" 
 
-compiliersupportstage()
-{
+
 	cd build-gcc
 	make "${MYJOBS}" all-target-libgcc
 	make install-target-libgcc
-	cd "${MYSTARTDIR}"
-}
-compiliersupportstage
+	cd "${MYSTARTDIR}" 
 
-standardclibstage()
-{
 	cd build-glibc
 	make "${MYJOBS}"
 	make install 
 	cd "${MYSTARTDIR}"
 }
-standardclibstage
+
+clibandheaderstage
 

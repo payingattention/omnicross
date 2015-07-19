@@ -1,9 +1,6 @@
 #!/bin/sh 
 
-set -ex
-# sources (incomplete list):
-#http://ftp.gnu.org/gnu/binutils/binutils-2.25.${SUFFIX}
-#http://ftp.barfooze.de/pub/sabotage/tarballs/kernel-headers-3.12.6-5.tar.xz 
+set -ex 
 
 # aarch64
         #MYTARG="aarch64-linux"
@@ -20,10 +17,10 @@ set -ex
 MYPREF="$(pwd)/toolchain/"
 MYSRC="$(pwd)/src/"
 MYBINUTILS="binutils-2.25"
-MYGCC="gcc-4.9.2"
-MYGMP="gmp-4.3.2"
-MYMPC="mpc-0.8.1"
-MYMPFR="mpfr-2.4.2"
+MYGCC="gcc-4.9.2" 
+MYGMP="gmp-6.0.0"
+MYMPC="mpc-1.0.2"
+MYMPFR="mpfr-3.1.2" 
 MYSTARTDIR="$(pwd)"
 MYJOBS="-j8" 
 MYLANGS="c" 
@@ -35,9 +32,6 @@ SUFFIX="tar.xz"
 
 
 export PATH="${MYPREF}/bin:${PATH}" 
-
-
-#mkdir -p "${MYPREF}/${MYTARG}"
 mkdir -p "${MYPREF}"
 
 obtain_source_code()
@@ -63,6 +57,7 @@ obtain_source_code()
         cd "${MYSTARTDIR}" 
 }
 #obtain_source_code
+
 clean()
 {
         rm -rf ${MYBINUTILS} ${MYGCC} ${MYGLIBC} \
@@ -97,6 +92,17 @@ musl_binutils_stage()
 }
 musl_binutils_stage
 
+
+# linux headers    headers flipped above first gcc stage
+kernelheadersstage()
+{
+	tar -xf "${MYSRC}/${MYLINUX}.${SUFFIX}"
+	cd "${MYLINUX}"
+	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$MYPREF/${MYTARG}"
+	cd "${MYSTARTDIR}"
+}
+kernelheadersstage 
+
 # gcc stage
 gcc_stage_one()
 {
@@ -105,12 +111,15 @@ gcc_stage_one()
 	patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
 	cd "${MYSTARTDIR}" 
 	
-	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}" 
-	mv "${MYGMP}" "${MYGCC}/gmp"
-	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}" 
-	mv "${MYMPFR}" "${MYGCC}/mpfr"
-	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}" 
-	mv "${MYMPC}" "${MYGCC}/mpc"
+	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
+        tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
+        tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
+
+        cd ${MYGCC}
+        ln -s ../${MYMPFR} mpfr
+        ln -s ../${MYGMP} gmp
+        ln -s ../${MYMPC} mpc
+        cd "${MYSTARTDIR}" 
 
 	mkdir build-gcc
 	cd build-gcc
@@ -140,15 +149,6 @@ gcc_stage_one()
 }
 gcc_stage_one
 
-# linux headers 
-kernelheadersstage()
-{
-	tar -xf "${MYSRC}/${MYLINUX}.${SUFFIX}"
-	cd "${MYLINUX}"
-	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$MYPREF/${MYTARG}"
-	cd "${MYSTARTDIR}"
-}
-kernelheadersstage 
 
 # musl stage
 muslstage()
