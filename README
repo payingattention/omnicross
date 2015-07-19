@@ -1,10 +1,18 @@
 # build
 
 Build a cross compiler
+	
 
+
+Retrieve the source code:
 	git clone https://github.com/cmgraff/build
 	cd build
+
+Build with gcc and glibc:
 	./build.sh
+
+Build with musl:
+	./muslbuild.sh
 
 
 

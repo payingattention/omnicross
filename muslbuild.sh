@@ -2,7 +2,7 @@
 
 set -ex
 # sources (incomplete list):
-#http://ftp.gnu.org/gnu/binutils/binutils-2.25.tar.bz2
+#http://ftp.gnu.org/gnu/binutils/binutils-2.25.${SUFFIX}
 #http://ftp.barfooze.de/pub/sabotage/tarballs/kernel-headers-3.12.6-5.tar.xz 
 
 # i586
@@ -22,11 +22,13 @@ MYJOBS="-j8"
 MYTARG="$ARCH-linux-musl"
 MYLANGS="c" 
 MYBINUTILS="binutils-2.25"
-MYSRC="$(pwd)/src"
+MYSRC="$(pwd)/src/"
 MYGCC="gcc-4.9.2"
 MYKERNELHEADERS="kernel-headers-3.12.6-5"
 MYMUSL="musl-1.1.6"
 PREFIX="${MYPREF}/${MYTARG}/" 
+SUFFIX="tar.xz"
+
 
 export PATH="${PREFIX}/bin:${PATH}" 
 
@@ -35,10 +37,33 @@ MYGCCFLAGS="--with-multilib-list=mx32"
 
 mkdir -p "${PREFIX}/${MYTARG}"
 
+obtain_source_code()
+{
+        GNU_MIRROR="https://ftp.gnu.org/gnu"
+        MUSL_MIRROR="http://www.musl-libc.org/releases"
+        KERNEL_MIRROR="http://ftp.barfooze.de/pub/sabotage/tarballs/" 
+        mkdir "${MYSRC}"
+        cd "${MYSRC}" 
+        wget "${MUSL_MIRROR}/${MYKERNELHEADERS}.${SUFFIX}"
+        wget ${KERNEL_MIRROR}/${MYKERNELHEADERS}.tar.xz
+        wget "${GNU_MIRROR}/gmp/${MYGMP}.${SUFFIX}"
+        wget "${GNU_MIRROR}/mpfr/${MYMPFR}.${SUFFIX}"
+        wget "${GNU_MIRROR}/mpc/${MYMPC}.${SUFFIX}"
+        wget "${GNU_MIRROR}/gcc/${MYGCC}/${MYGCC}.${SUFFIX}"
+        wget "${GNU_MIRROR}/binutils/${MYBINUTILS}.${SUFFIX}" 
+        #wget "${GNU_MIRROR}/glibc/${GLIBC_VERSION}.${SUFFIX}" 
+        #wget "${NEWLIB_MIRROR}/${NEWLIB_VERSION}.${SUFFIX}"
+        cd "${MYSTARTDIR}" 
+        mkdir patches
+        cd patches
+        cd "${MYSTARTDIR}" 
+}
+#obtain_source_code
+
 # binutils 
 binutilsstage()
 {
-	tar -xf "${MYSRC}/${MYBINUTILS}.tar.bz2"
+	tar -xf "${MYSRC}/${MYBINUTILS}.${SUFFIX}"
 
 	mkdir build-binutils
 	cd build-binutils
@@ -56,16 +81,16 @@ binutilsstage
 # gcc stage
 gcc_stage_one()
 {
-	tar -xf "${MYSRC}/${MYGCC}.tar.bz2"
+	tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}"
 	cd "${MYGCC}"
 	patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
 	cd "${MYSTARTDIR}" 
 	
-	tar -xf "${MYSRC}/${MYGMP}.tar.bz2"
+	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
 	mv "${MYGMP}" "${MYGCC}/gmp"
-	tar -xf "${MYSRC}/${MYMPFR}.tar.bz2"
+	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
 	mv "${MYMPFR}" "${MYGCC}/mpfr"
-	tar -xf "${MYSRC}/${MYMPC}.tar.gz"
+	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
 	mv "${MYMPC}" "${MYGCC}/mpc"
 
 	mkdir build-gcc
@@ -99,7 +124,7 @@ gcc_stage_one
 # linux headers 
 kernelheadersstage()
 {
-	tar -xf "${MYSRC}/${MYKERNELHEADERS}.tar.xz"
+	tar -xf "${MYSRC}/${MYKERNELHEADERS}.${SUFFIX}"
 	cd "${MYKERNELHEADERS}"
 	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$PREFIX/${MYTARG}"
 	cd "${MYSTARTDIR}"
@@ -111,7 +136,7 @@ muslstage()
 { 
 
 	# musl
-	tar -xf "${MYSRC}/${MYMUSL}.tar.gz"
+	tar -xf "${MYSRC}/${MYMUSL}.${SUFFIX}"
 
 	cd "${MYMUSL}"
         ./configure \
