@@ -10,51 +10,67 @@
 	MYTARG="x86_64-linux"
 	MYLINUXARCH="x86_64"
 
-MYJOBS="-j8" 
+#set -xe
+
+
 MYPREF="$(pwd)/toolchain/"
-MYCONF="--disable-multilib"
-	#"--disable-multilib --disable-threads --disable-shared"
-MYBINUTILS="binutils-2.24"
+MYSRC="$(pwd)/src" 
+MYBINUTILS="binutils-2.25"
 MYGCC="gcc-4.9.2"
-MYLINUX="kernel-headers-3.12.6-5"
-MYGLIBC="glibc-2.20"
-MYMPFR="mpfr-3.1.2"
-MYGMP="gmp-6.0.0a" 
+MYGMP="gmp-6.0.0"
 MYMPC="mpc-1.0.2"
-
-
+MYMPFR="mpfr-3.1.2" 
+MYSTARTDIR="$(pwd)"
+MYJOBS="-j8"
 MYLANGS="c,c++" 
-MYSTARTDIR="$(pwd)" 
-MYSRC="$(pwd)/src"
+MYLINUX="kernel-headers-3.12.6-5" 
+MYCONF="--disable-multilib" #"--disable-multilib --disable-threads --disable-shared" 
+MYGLIBC="glibc-2.20" 
+SUFFIX="tar.xz"
 
 
+export PATH="${MYPREF}/bin:${PATH}"
 
-
-get_components()
+# https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz
+obtain_source_code()
 {
-
-	cd ${MYSRC}
-	wget http://ftpmirror.gnu.org/binutils/${MYBINUTILS}.tar.gz
-	wget http://ftpmirror.gnu.org/gcc/${MYGCC}/${MYGCC}.tar.gzS 
-	wget https://www.kernel.org/pub/linux/kernel/v3.x/${MYLINUX}.tar.xz 
-	wget http://ftpmirror.gnu.org/glibc/${MYGLIBC}.tar.xz 
-	wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz 
-	wget http://ftpmirror.gnu.org/gmp/${MYGMP}.tar.xz 
-	wget http://ftpmirror.gnu.org/mpc/${MYMPC}.tar.gz 
-	cd "${MYSTARTDIR}"
+        GNU_MIRROR="https://ftp.gnu.org/gnu"
+        MUSL_MIRROR="http://www.musl-libc.org/releases"
+        KERNEL_MIRROR="http://ftp.barfooze.de/pub/sabotage/tarballs/"
+        SUFFIX="tar.gz"
+        mkdir "${MYSRC}"
+        cd "${MYSRC}"
+        wget "${MUSL_MIRROR}/${MYLINUX}.${SUFFIX}"
+        wget ${KERNEL_MIRROR}/${MYLINUX}.tar.xz
+        wget "${GNU_MIRROR}/gmp/${MYGMP}.${SUFFIX}"
+        wget "${GNU_MIRROR}/mpfr/${MYMPFR}.${SUFFIX}"
+        wget "${GNU_MIRROR}/mpc/${MYMPC}.${SUFFIX}"
+        wget "${GNU_MIRROR}/gcc/${MYGCC}/${MYGCC}.${SUFFIX}"
+        wget "${GNU_MIRROR}/binutils/${MYBINUTILS}.${SUFFIX}"
+        #wget "${GNU_MIRROR}/glibc/${GLIBC_VERSION}.${SUFFIX}" 
+        #wget "${NEWLIB_MIRROR}/${NEWLIB_VERSION}.${SUFFIX}"
+        cd "${MYSTARTDIR}"
+        mkdir patches
+        cd patches
+        cd "${MYSTARTDIR}"
 }
-#get_components
+#obtain_source_code
 
 clean()
 {
-        rm -rf ${MYBINUTILS} ${MYCLOOG} ${MYGCC} ${MYGLIBC} \
-	${MYISL} ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} \
-	build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
-	cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+        rm -rf ${MYBINUTILS} ${MYGCC} ${MYGLIBC} \
+         ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} \
+        build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
+        cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+        rm -rf ${MYMUSL}
+        rm -rf toolchain/
+        rm -rf build-binutils/
+        rm -rf musl-build/
+        rm -rf build-gcc/
+        rm -rf build2-gcc
+        rm -rf a.out
 }
-clean 
-
-
+clean
 
 unpack_components()
 { 
@@ -62,17 +78,17 @@ unpack_components()
 	do 	tar -xf "$MYTARBALL"
 	done
 }
-unpack_components
+#unpack_components
 
-link_components()
-{
-	cd ${MYGCC}
-	ln -s ../${MYMPFR} mpfr
-	ln -s ../gmp-6.0.0 gmp
-	ln -s ../${MYMPC} mpc 
-	cd "${MYSTARTDIR}"
-}
-link_components
+#link_components()
+#{
+#	cd ${MYGCC}
+#	ln -s ../${MYMPFR} mpfr
+#	ln -s ../gmp-6.0.0 gmp
+#	ln -s ../${MYMPC} mpc 
+#	cd "${MYSTARTDIR}"
+#}
+#link_components
 
 makesysroot()
 {
@@ -80,20 +96,18 @@ makesysroot()
 }
 makesysroot 
 
-modifypath()
-{
-	export PATH=${MYPREF}/bin:$PATH
-}
-modifypath
-
 binutilsstage()
 {
+	tar -xf "${MYSRC}/${MYBINUTILS}.${SUFFIX}"
+
 	mkdir build-binutils
 	cd build-binutils
 	${MYSTARTDIR}/${MYBINUTILS}/configure \
 	--prefix=${MYPREF} \
 	--target=${MYTARG} \
 	${MYCONF}
+	
+	
 	make "${MYJOBS}"
 	make install
 	cd "${MYSTARTDIR}"
@@ -102,6 +116,7 @@ binutilsstage
 
 linuxstage()
 { 
+	tar -xf "${MYSRC}/${MYLINUX}.${SUFFIX}"
 	cd ${MYLINUX}
 	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
 	cd "${MYSTARTDIR}"
@@ -110,6 +125,20 @@ linuxstage
 
 gccstage()
 {
+	tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}"
+
+        tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
+       # mv "${MYGMP}" "${MYGCC}/gmp"
+        tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
+       # mv "${MYMPFR}" "${MYGCC}/mpfr"
+        tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
+       # mv "${MYMPC}" "${MYGCC}/mpc"
+	cd ${MYGCC}
+	       ln -s ../${MYMPFR} mpfr
+       ln -s ../${MYGMP} gmp
+       ln -s ../${MYMPC} mpc
+	cd "${MYSTARTDIR}"
+
 	mkdir build-gcc
 	cd build-gcc
 	${MYSTARTDIR}/${MYGCC}/configure \
@@ -125,6 +154,7 @@ gccstage
 
 clibandheaderstage()
 {
+	tar -xf "${MYSRC}/${MYGLIBC}.${SUFFIX}"
 	mkdir -p build-glibc
 	cd build-glibc
 	${MYSTARTDIR}/${MYGLIBC}/configure \

@@ -5,38 +5,40 @@ set -ex
 #http://ftp.gnu.org/gnu/binutils/binutils-2.25.${SUFFIX}
 #http://ftp.barfooze.de/pub/sabotage/tarballs/kernel-headers-3.12.6-5.tar.xz 
 
+# aarch64
+        #MYTARG="aarch64-linux"
+        #MYLINUXARCH="arm64"
+
 # i586
-	ARCH="i586"
+	MYTARG="i586-linux-musl" 
 	MYLINUXARCH="x86" 
 
 # x86_64
-	#ARCH="x86_64" 
+	#MYTARG="x86_64-linux-musl"
 	#MYLINUXARCH="x86_64"
 
-MYPREF="$(pwd)/toolchain/" 
+MYPREF="$(pwd)/toolchain/"
+MYSRC="$(pwd)/src/"
+MYBINUTILS="binutils-2.25"
+MYGCC="gcc-4.9.2"
 MYGMP="gmp-4.3.2"
 MYMPC="mpc-0.8.1"
 MYMPFR="mpfr-2.4.2"
 MYSTARTDIR="$(pwd)"
-MYJOBS="-j4" 
-MYTARG="$ARCH-linux-musl"
+MYJOBS="-j8" 
 MYLANGS="c" 
-MYBINUTILS="binutils-2.25"
-MYSRC="$(pwd)/src/"
-MYGCC="gcc-4.9.2"
-MYKERNELHEADERS="kernel-headers-3.12.6-5"
-MYMUSL="musl-1.1.6"
-PREFIX="${MYPREF}/${MYTARG}/" 
-#PREFIX="${MYPREF}"
-SUFFIX="tar.xz"
+MYLINUX="kernel-headers-3.12.6-5" 
+MYCONF="--disable-multilib --with-multilib-list="
+#MYCONF="--with-multilib-list=mx32" 
+MYMUSL="musl-1.1.6" 
+SUFFIX="tar.xz" 
 
 
-export PATH="${PREFIX}/bin:${PATH}" 
+export PATH="${MYPREF}/bin:${PATH}" 
 
-#MYGCCFLAGS="--disable-multilib --with-multilib-list="
-MYGCCFLAGS="--with-multilib-list=mx32"
 
-mkdir -p "${PREFIX}/${MYTARG}"
+#mkdir -p "${MYPREF}/${MYTARG}"
+mkdir -p "${MYPREF}"
 
 obtain_source_code()
 {
@@ -46,8 +48,8 @@ obtain_source_code()
 	SUFFIX="tar.gz"
         mkdir "${MYSRC}"
         cd "${MYSRC}" 
-        wget "${MUSL_MIRROR}/${MYKERNELHEADERS}.${SUFFIX}"
-        wget ${KERNEL_MIRROR}/${MYKERNELHEADERS}.tar.xz
+        wget "${MUSL_MIRROR}/${MYLINUX}.${SUFFIX}"
+        wget ${KERNEL_MIRROR}/${MYLINUX}.tar.xz
         wget "${GNU_MIRROR}/gmp/${MYGMP}.${SUFFIX}"
         wget "${GNU_MIRROR}/mpfr/${MYMPFR}.${SUFFIX}"
         wget "${GNU_MIRROR}/mpc/${MYMPC}.${SUFFIX}"
@@ -67,6 +69,7 @@ clean()
          ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} \
         build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
         cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+	rm -rf ${MYMUSL}
 	rm -rf toolchain/
 	rm -rf build-binutils/
 	rm -rf musl-build/
@@ -85,7 +88,7 @@ musl_binutils_stage()
 	cd build-binutils
 	${MYSTARTDIR}/${MYBINUTILS}/configure \
         --target=${MYTARG} \
-	--prefix="$PREFIX"
+	--prefix="$MYPREF"
 
 	make "${MYJOBS}"
 	make install
@@ -113,7 +116,7 @@ gcc_stage_one()
 	cd build-gcc
 
 	${MYSTARTDIR}/${MYGCC}/configure \
-	--prefix="$PREFIX" \
+	--prefix="$MYPREF" \
 	--target=${MYTARG} \
 	--enable-languages=c \
 	--with-newlib \
@@ -126,7 +129,7 @@ gcc_stage_one()
 	--disable-libmudflap \
 	--disable-libgomp \
 	--disable-libatomic \
-	$MYGCCFLAGS
+	$MYCONF
 
     
 	make "${MYJOBS}" CFLAGS="-O0 -g0" CXXFLAGS="-O0 -g0"
@@ -140,9 +143,9 @@ gcc_stage_one
 # linux headers 
 kernelheadersstage()
 {
-	tar -xf "${MYSRC}/${MYKERNELHEADERS}.${SUFFIX}"
-	cd "${MYKERNELHEADERS}"
-	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$PREFIX/${MYTARG}"
+	tar -xf "${MYSRC}/${MYLINUX}.${SUFFIX}"
+	cd "${MYLINUX}"
+	make headers_install ARCH="${MYLINUXARCH}" INSTALL_HDR_PATH="$MYPREF/${MYTARG}"
 	cd "${MYSTARTDIR}"
 }
 kernelheadersstage 
@@ -156,7 +159,7 @@ muslstage()
 
 	cd "${MYMUSL}"
         ./configure \
-        --prefix="${PREFIX}/${MYTARG}" \
+        --prefix="${MYPREF}/${MYTARG}" \
         --enable-debug \
         --enable-optimize \
         CROSS_COMPILE="${MYTARG}-" CC="${MYTARG}-gcc" 
@@ -167,19 +170,19 @@ muslstage()
         cd "${MYSTARTDIR}"
 
 	# gcc 2
-	if [ ! -e "$PREFIX/${MYTARG}/lib/libc.so" ]
-	then 	MYGCCFLAGS="${MYGCCFLAGS} --disable-shared "
+	if [ ! -e "$MYPREF/${MYTARG}/lib/libc.so" ]
+	then 	MYCONF="${MYCONF} --disable-shared "
 	fi 
 
 	mkdir build2-gcc
 	cd build2-gcc
 	${MYSTARTDIR}/${MYGCC}/configure \
-	--prefix="$PREFIX" \
+	--prefix="$MYPREF" \
 	--target=${MYTARG} \
 	--enable-languages=${MYLANGS} \
 	--disable-libmudflap \
 	--disable-libsanitizer --disable-nls \
-	$MYGCCFLAGS 
+	$MYCONF 
 
 	make "${MYJOBS}"
         make install

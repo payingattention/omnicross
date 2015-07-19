@@ -1,0 +1,39 @@
+
+ OOOOO M   M N   N IIIII CCCCC RRRR  OOOOO SSSSS SSSSS
+ O   O MM MM NN  N   I   C     R   R O   O S     S
+ O   O M M M N N N   I   C     R   R O   O SSSSS SSSSS
+ O   O M   M N  NN   I   C     RRRR  O   O     S     S
+ O   O M   M N   N   I   C     R   R O   O     S     S
+ O   O M   M N   N   I   C     R   R O   O     S     S
+ OOOOO M   M N   N IIIII CCCCC R   R OOOOO SSSSS SSSSS
+
+
+ OOOOO M   M N   N IIIII CCCCC RRRR  OOOOO SSSSS SSSSS
+ O   O MM MM NN  N   I   C     R   R O   O S     S
+ O   O M M M N N N   I   C     RRRR  O   O SSSSS SSSSS
+ O   O M   M N  NN   I   C     R   R O   O     S     S
+ O   O M   M N   N   I   C     R   R O   O     S     S 
+ OOOOO M   M N   N IIIII CCCCC R   R OOOOO SSSSS SSSSS
+
+
+ ##### #   # #   # ##### ##### ####  ##### ##### #####
+ #   # ## ## ##  #   #   #     ##### #   # ####  ####
+ #   # # # # # # #   #   #     #  #  #   #     #     #     
+ #   # #   # #  ##   #   #     #   # #   #     #     #
+ ##### #   # #   # ##### ##### #   # ##### ##### #####
+
+
+
+ ##### #   # #   # ##### ##### ####  ##### ##### #####
+ #   # ## ## ##  #   #   #     ##### #   # ####  ####
+ #   # # # # # # #   #   #     #  #  #   #     #     #
+ ##### #   # #   # ##### ##### #   # ##### ##### #####
+
+OOOOOOO
+OM   MO 
+OMM MMO 
+OM M MO
+OM  NMO
+OM   MO
+OOOOOOO
+  
