@@ -27,6 +27,7 @@ MYGCC="gcc-4.9.2"
 MYKERNELHEADERS="kernel-headers-3.12.6-5"
 MYMUSL="musl-1.1.6"
 PREFIX="${MYPREF}/${MYTARG}/" 
+#PREFIX="${MYPREF}"
 SUFFIX="tar.xz"
 
 
@@ -42,6 +43,7 @@ obtain_source_code()
         GNU_MIRROR="https://ftp.gnu.org/gnu"
         MUSL_MIRROR="http://www.musl-libc.org/releases"
         KERNEL_MIRROR="http://ftp.barfooze.de/pub/sabotage/tarballs/" 
+	SUFFIX="tar.gz"
         mkdir "${MYSRC}"
         cd "${MYSRC}" 
         wget "${MUSL_MIRROR}/${MYKERNELHEADERS}.${SUFFIX}"
@@ -100,11 +102,11 @@ gcc_stage_one()
 	patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
 	cd "${MYSTARTDIR}" 
 	
-	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}" -C "${MYGCC}"
+	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}" 
 	mv "${MYGMP}" "${MYGCC}/gmp"
-	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}" -C "${MYGCC}"
+	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}" 
 	mv "${MYMPFR}" "${MYGCC}/mpfr"
-	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}" -C "${MYGCC}"
+	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}" 
 	mv "${MYMPC}" "${MYGCC}/mpc"
 
 	mkdir build-gcc
