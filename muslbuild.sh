@@ -28,6 +28,7 @@ MYLINUX="kernel-headers-3.12.6-5"
 MYCONF="--disable-multilib --with-multilib-list="
 #MYCONF="--with-multilib-list=mx32" 
 MYMUSL="musl-1.1.6" 
+MYGLIBC="glibc-2.20"
 SUFFIX="tar.xz" 
 
 

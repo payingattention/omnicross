@@ -7,12 +7,12 @@
 	#MYLINUXARCH="arm64"
 
 # i586
-	#MYTARG="i586-linux"
-	#MYLINUXARCH="x86"
+	MYTARG="i586-linux"
+	MYLINUXARCH="x86"
 
 # x86_64
-	MYTARG="x86_64-linux"
-	MYLINUXARCH="x86_64" 
+	#MYTARG="x86_64-linux"
+	#MYLINUXARCH="x86_64" 
 
 MYPREF="$(pwd)/toolchain/"
 MYSRC="$(pwd)/src" 
@@ -23,10 +23,12 @@ MYMPC="mpc-1.0.2"
 MYMPFR="mpfr-3.1.2" 
 MYSTARTDIR="$(pwd)"
 MYJOBS="-j8"
-MYLANGS="c,c++" 
+#MYLANGS="c,c++" 
+MYLANGS="c"
 MYLINUX="kernel-headers-3.12.6-5" 
 MYCONF="--disable-multilib --with-multilib-list=" 
 #MYCONF="--with-multilib-list=mx32"
+MYMUSL="musl-1.1.6"
 MYGLIBC="glibc-2.20" 
 SUFFIX="tar.xz"
 
@@ -35,7 +37,7 @@ export PATH="${MYPREF}/bin:${PATH}"
 mkdir -p ${MYPREF} 
 
 
-obtain_source_code()
+common_obtain_source_code()
 {
         GNU_MIRROR="https://ftp.gnu.org/gnu"
         MUSL_MIRROR="http://www.musl-libc.org/releases"
@@ -57,9 +59,9 @@ obtain_source_code()
         cd patches
         cd "${MYSTARTDIR}"
 }
-#obtain_source_code
+#common_obtain_source_code
 
-clean()
+common_clean()
 {
         rm -rf ${MYBINUTILS} ${MYGCC} ${MYGLIBC} \
          ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} \
@@ -73,10 +75,10 @@ clean()
         rm -rf build2-gcc
         rm -rf a.out
 }
-clean
+common_clean
 
 
-binutilsstage()
+common_binutils_stage()
 {
 	tar -xf "${MYSRC}/${MYBINUTILS}.${SUFFIX}"
 
@@ -90,44 +92,64 @@ binutilsstage()
 	make install
 	cd "${MYSTARTDIR}"
 }
-binutilsstage
+common_binutils_stage
 
-linuxstage()
+common_linux_stage()
 { 
 	tar -xf "${MYSRC}/${MYLINUX}.${SUFFIX}"
 	cd ${MYLINUX}
 	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
 	cd "${MYSTARTDIR}"
 }
-linuxstage 
+common_linux_stage
 
-gccstage()
+
+common_gcc_stage_one()
 {
-	tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}" 
-	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}" 
-	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}" 
-	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
+        tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}"
+        cd "${MYGCC}"
+        patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
+        cd "${MYSTARTDIR}"
 
-	cd ${MYGCC}
-	ln -s ../${MYMPFR} mpfr
-	ln -s ../${MYGMP} gmp
-	ln -s ../${MYMPC} mpc
-	cd "${MYSTARTDIR}"
+        tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
+        tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
+        tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
 
-	mkdir build-gcc
-	cd build-gcc
-	${MYSTARTDIR}/${MYGCC}/configure \
-	--prefix=${MYPREF} \
-	--target=${MYTARG} \
-	--enable-languages=${MYLANGS} \
-        ${MYCONF} 
-	make "${MYJOBS}" all-gcc
-	make install-gcc
-	cd "${MYSTARTDIR}"
+        cd ${MYGCC}
+        ln -s ../${MYMPFR} mpfr
+        ln -s ../${MYGMP} gmp
+        ln -s ../${MYMPC} mpc
+        cd "${MYSTARTDIR}"
+
+        mkdir build-gcc
+        cd build-gcc
+
+        ${MYSTARTDIR}/${MYGCC}/configure \
+        --prefix="$MYPREF" \
+        --target=${MYTARG} \
+        --enable-languages=c \
+        --with-newlib \
+        --disable-libssp \
+        --disable-nls \
+        --disable-libquadmath \
+        --disable-threads \
+        --disable-decimal-float \
+        --disable-shared \
+        --disable-libmudflap \
+        --disable-libgomp \
+        --disable-libatomic \
+        $MYCONF
+
+
+        make "${MYJOBS}" CFLAGS="-O0 -g0" CXXFLAGS="-O0 -g0"
+        make install
+
+        cd "${MYSTARTDIR}"
+
 }
-gccstage
+common_gcc_stage_one
 
-clibandheaderstage()
+glibc_stage()
 {
 	tar -xf "${MYSRC}/${MYGLIBC}.${SUFFIX}"
 	mkdir -p build-glibc
@@ -165,6 +187,46 @@ clibandheaderstage()
 	make install 
 	cd "${MYSTARTDIR}"
 }
+# glibc_stage
 
-clibandheaderstage
+
+musl_stage()
+{
+
+        # musl
+        tar -xf "${MYSRC}/${MYMUSL}.${SUFFIX}"
+
+        cd "${MYMUSL}"
+        ./configure \
+        --prefix="${MYPREF}/${MYTARG}" \
+        --enable-debug \
+        --enable-optimize \
+        CROSS_COMPILE="${MYTARG}-" CC="${MYTARG}-gcc"
+
+        make "${MYJOBS}"
+        make install
+
+        cd "${MYSTARTDIR}"
+
+        # gcc 2
+        if [ ! -e "$MYPREF/${MYTARG}/lib/libc.so" ]
+        then    MYCONF="${MYCONF} --disable-shared "
+        fi
+
+        mkdir build2-gcc
+        cd build2-gcc
+        ${MYSTARTDIR}/${MYGCC}/configure \
+        --prefix="$MYPREF" \
+        --target=${MYTARG} \
+        --enable-languages=${MYLANGS} \
+        --disable-libmudflap \
+        --disable-libsanitizer --disable-nls \
+        $MYCONF
+
+        make "${MYJOBS}"
+        make install
+
+        cd "${MYSTARTDIR}"
+}
+musl_stage
 
