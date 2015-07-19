@@ -47,9 +47,9 @@ Modifying and understanding the code in Omnicross:
 	At this juncture in time all code and configuration is contained
 	within a single file "build.sh". The "patches" and "src" dirs
 	contain the needed compressed packages to make a cross compiler (
-	gcc, gmp, libc etc). If there are not populated with the versions 
-	of utilities you need the simepl retrieval function 
-	"common_obtain_source_code" can be inviked by uncommenting it.
+	gcc, gmp, libc etc). If they are not populated with the versions 
+	of utilities you need -- then the simple network retrieval function 
+	"common_obtain_source_code" can be invoked by uncommenting it.
 	
 	All variable declarations are made at the beginning of the file and
 	are prefixed with "MY". 
