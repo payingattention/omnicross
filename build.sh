@@ -21,8 +21,8 @@ MYGLIBC="glibc-2.20"
 MYMPFR="mpfr-3.1.2"
 MYGMP="gmp-6.0.0a" 
 MYMPC="mpc-1.0.2"
-MYISL="isl-0.12.2"
-MYCLOOG="cloog-0.18.1" 
+
+
 MYLANGS="c,c++" 
 MYSTARTDIR="$(pwd)" 
 MYSRC="$(pwd)/src"
@@ -41,8 +41,6 @@ get_components()
 	wget http://ftpmirror.gnu.org/mpfr/${MYMPFR}.tar.xz 
 	wget http://ftpmirror.gnu.org/gmp/${MYGMP}.tar.xz 
 	wget http://ftpmirror.gnu.org/mpc/${MYMPC}.tar.gz 
-	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYISL}.tar.bz2 
-	wget ftp://gcc.gnu.org/pub/gcc/infrastructure/${MYCLOOG}.tar.gz 
 	cd "${MYSTARTDIR}"
 }
 #get_components
@@ -71,9 +69,7 @@ link_components()
 	cd ${MYGCC}
 	ln -s ../${MYMPFR} mpfr
 	ln -s ../gmp-6.0.0 gmp
-	ln -s ../${MYMPC} mpc
-	#ln -s ../${MYISL} isl
-	#ln -s ../${MYCLOOG} cloog
+	ln -s ../${MYMPC} mpc 
 	cd "${MYSTARTDIR}"
 }
 link_components
@@ -81,12 +77,6 @@ link_components
 makesysroot()
 {
 	mkdir -p ${MYPREF} 
-	# allow the  to install outside of /home
-	if ! [ -d ${MYPREF} ]
-	then 	sudo mkdir -p ${MYPREF} || exit 1
-		sudo chown $USER ${MYPREF}
-	fi
-
 }
 makesysroot 
 

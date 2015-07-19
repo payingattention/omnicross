@@ -59,9 +59,23 @@ obtain_source_code()
         cd "${MYSTARTDIR}" 
 }
 #obtain_source_code
+clean()
+{
+        rm -rf ${MYBINUTILS} ${MYGCC} ${MYGLIBC} \
+         ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} \
+        build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
+        cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
+	rm -rf toolchain/
+	rm -rf build-binutils/
+	rm -rf musl-build/
+	rm -rf build-gcc/
+	rm -rf build2-gcc
+	rm -rf a.out 
+}
+clean
 
 # binutils 
-binutilsstage()
+musl_binutils_stage()
 {
 	tar -xf "${MYSRC}/${MYBINUTILS}.${SUFFIX}"
 
@@ -76,7 +90,7 @@ binutilsstage()
 	
 	cd "${MYSTARTDIR}"
 }
-binutilsstage
+musl_binutils_stage
 
 # gcc stage
 gcc_stage_one()
@@ -86,11 +100,11 @@ gcc_stage_one()
 	patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
 	cd "${MYSTARTDIR}" 
 	
-	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
+	tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}" -C "${MYGCC}"
 	mv "${MYGMP}" "${MYGCC}/gmp"
-	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
+	tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}" -C "${MYGCC}"
 	mv "${MYMPFR}" "${MYGCC}/mpfr"
-	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}"
+	tar -xf "${MYSRC}/${MYMPC}.${SUFFIX}" -C "${MYGCC}"
 	mv "${MYMPC}" "${MYGCC}/mpc"
 
 	mkdir build-gcc
