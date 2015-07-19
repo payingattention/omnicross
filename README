@@ -1,28 +1,47 @@
-# build
 
-Build a cross compiler
+Omnicross 
+	Build a musl or glibc based cross compiler.
 	
 
 
-Retrieve the source code:
-	git clone https://github.com/cmgraff/build
-	cd build
 
-Build with gcc and glibc:
-	./build.sh
+Installation:
+	Retrieve the source code:
+		git clone https://github.com/cmgraff/build
+		cd build
 
-Build with musl:
-	./muslbuild.sh
+	Build with gcc and glibc:
+		./build.sh
 
-
-
-
+	Build with gcc and musl:
+		./muslbuild.sh 
 
 
 
-These are the versions of various tools I used to build this script.
-They are here for documentation purposes so that the steps can be
-reproduced at a later date if needed.
+Sparse installation (for slow networks):
+	Retrieve the source code:
+		i="https://raw.githubusercontent.com/cmgraff/omnicross/master/"
+		wget "${i}/build.sh"
+		wget "${i}/muslbuild.sh"
+		mkdir patches
+		cd patches
+		wget "${i}/patches/gcc-4.9.2-musl.diff"
+		cd ..
+		chmod +x build.sh muslbuild.sh
+
+	Build with gcc and glibc: 
+		./build.sh
+
+	Build with gcc and musl:
+		./muslbuild.sh
+
+	
+
+
+Notes:
+ These are the versions of various tools I used to build this script.
+ They are here for documentation purposes so that the steps can be
+ reproduced at a later date if needed.
 
 
 date
