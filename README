@@ -8,38 +8,37 @@
 
 Omnicross  Build a musl or glibc based cross compiler.
 	
-
+(C) Copyright 2015. `Omnicross'. CM Graff et al
 
 
 Installation:
 	Retrieve the source code:
-		git clone https://github.com/cmgraff/build
-		cd build
+		git clone https://github.com/cmgraff/omnicross
+		cd omnicross
 
-	Build with gcc and glibc:
-		./build.sh
+	Build:
+		./build.sh 
 
-	Build with gcc and musl:
-		./muslbuild.sh 
 
 
 
 Sparse installation (for slow networks):
 	Retrieve the source code:
+		mkdir -p omnicross
+		cd omnicross
 		i="https://raw.githubusercontent.com/cmgraff/omnicross/master/"
-		wget "${i}/build.sh"
-		wget "${i}/muslbuild.sh"
+		wget "${i}/build.sh" 
 		mkdir patches
 		cd patches
 		wget "${i}/patches/gcc-4.9.2-musl.diff"
 		cd ..
-		chmod +x build.sh muslbuild.sh
+		chmod +x build.sh
 
-	Build with gcc and glibc: 
+	Build: 
 		./build.sh
 
-	Build with gcc and musl:
-		./muslbuild.sh
+	
+
 
 
 Modifying and understanding the code in Omnicross:
@@ -52,7 +51,8 @@ Modifying and understanding the code in Omnicross:
 	"common_obtain_source_code" can be invoked by uncommenting it.
 	
 	All variable declarations are made at the beginning of the file and
-	are prefixed with "MY". 
+	are prefixed with "MY" so as to maitain clarity and not interfere
+	with any aspects of the build environment or shell.
 
 	To select an architecture, open the main build.sh file and modify
 	MYTARG and MYLINUXARCH.  
@@ -77,10 +77,8 @@ Modifying and understanding the code in Omnicross:
 	If you are building against musl C libraries any functions
 	not prefixed as "common_" or "musl_" should be commented out or
 	controlled by various tests that I or the user/developer might 
-	insert.
-
-	And likewise for glibc, only functions prefixed "glibc_" and 
-	"common_" should be invoked.
+	insert. And likewise for glibc, only functions prefixed "glibc_" 
+	and "common_" should be invoked.
 
 	
 
@@ -109,10 +107,7 @@ Notes:
 	GNU Awk 4.0.1
 	Copyright (C) 1989, 1991-2012 Free Software Foundation.
 
-	gcc -v
-	Using built-in specs.
-	COLLECT_GCC=gcc
-	COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.7/lto-wrapper
+	gcc -v 
 	Target: x86_64-linux-gnu 
 	Thread model: posix
 	gcc version 4.7.2 (Debian 4.7.2-5)
