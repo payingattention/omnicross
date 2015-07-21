@@ -7,7 +7,7 @@
 
 Omnicross  Build a musl or glibc based cross compiler.
 	
-(C) Copyright 2015. `Omnicross'. CM Graff 
+(C) Copyright 2015. `Omnicross'. MIT License, CM Graff 
 
 
 
