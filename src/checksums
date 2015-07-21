@@ -1,4 +1,4 @@
-4addfb4e6028fe06a1815ca3f60d0dc0  binutils-2.25.tar.xz
+4addfb4e6028fe06a1815ca3f60d0dc0  binutils-2.25.tar.xz 
 9df44e81efe7a511117bd00cedf1684a  gcc-4.9.2.tar.xz
 3077dcf6e3ca37d0d99668063c5f7523  glibc-2.20.tar.xz
 50e148af98ad23842ad5ae1642352f70  gmp-4.3.2.tar.xz
@@ -9,3 +9,4 @@ f3f1ed5bac198a8d91c9bc22a497ed66  gmp-6.0.0.tar.xz
 bf3074116ad5a04b672cbe409ee304f8  mpfr-2.4.2.tar.xz
 5fdc86c1ab87f663bdf4facf47824ef0  mpfr-3.1.2.tar.xz
 d6c74eebc9baea3a5d6d137b276deadd  musl-1.1.6.tar.xz
+c30a1956fede2dd77a7d56f33c65bfc8  newlib-0.0.0.tar.xz
