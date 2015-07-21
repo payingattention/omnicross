@@ -7,12 +7,16 @@ set -ex
 	#MYLINUXARCH="arm64"
 
 # i586
-	#MYTARG="i586-linux"
-	#MYLINUXARCH="x86"
+	MYTARG="i586-linux"
+	MYLINUXARCH="x86"
 
 # x86_64
-	MYTARG="x86_64-linux"
-	MYLINUXARCH="x86_64" 
+	#MYTARG="x86_64-linux"
+	#MYLINUXARCH="x86_64" 
+
+# i586
+        #MYTARG="i386-linux"
+        #MYLINUXARCH="x86"
 
 MYPREF="$(pwd)/toolchain/"
 MYSRC="$(pwd)/src" 
@@ -30,8 +34,9 @@ MYCONF="--disable-multilib --with-multilib-list="
 #MYCONF="--with-multilib-list=mx32"
 MYMUSL="musl-1.1.6"
 MYGLIBC="glibc-2.20" 
-MYNEWLIB="newlib-2.2.0"
-MYUCLIBC="uClibc-ng-1.0.4"
+
+#MYUCLIBC="uClibc-ng-1.0.4"
+MYUCLIBC="uClibc"
 SUFFIX="tar.xz"
 
 
@@ -61,7 +66,7 @@ common_obtain_source_code()
         cd patches
         cd "${MYSTARTDIR}"
 }
-#common_obtain_source_code
+
 
 common_clean()
 {
@@ -78,7 +83,7 @@ common_clean()
         rm -rf build2-gcc
         rm -rf a.out
 }
-common_clean 
+
 
 
 common_binutils_stage()
@@ -95,7 +100,7 @@ common_binutils_stage()
 	make install
 	cd "${MYSTARTDIR}"
 }
-common_binutils_stage
+
 
 common_linux_stage()
 { 
@@ -104,7 +109,7 @@ common_linux_stage()
 	make ARCH=${MYLINUXARCH} INSTALL_HDR_PATH=${MYPREF}/${MYTARG} headers_install
 	cd "${MYSTARTDIR}"
 }
-common_linux_stage
+
 
 
 common_gcc_stage_one()
@@ -152,7 +157,7 @@ common_gcc_stage_one()
         cd "${MYSTARTDIR}"
 
 }
-common_gcc_stage_one
+
 
 glibc_stage()
 {
@@ -192,36 +197,14 @@ glibc_stage()
 	make install 
 	cd "${MYSTARTDIR}"
 }
-#glibc_stage
+
 
 newlib_stage()
 {
-	tar -xf "${MYSRC}/${MYNEWLIB}.${SUFFIX}"
-	mkdir -p build-newlib
-	cd build-newlib 
-	${MYSTARTDIR}/${MYNEWLIB}/configure \
-        --target="${MYTARG}" \
-        --prefix="${MYPREF}" \
-	--disable-threads \
-	--disable-shared
-	#$MYCONF 
-	make "${MYJOBS}"
-	make install
-	cd "${MYSTARTDIR}" 
-        #mkdir build2-gcc
-        cd build2-gcc
-        ${MYSTARTDIR}/${MYGCC}/configure \
-        --prefix="$MYPREF" \
-        --target=${MYTARG} \
-        --enable-languages=${MYLANGS} \
-	--disable-threads 
-        make "${MYJOBS}"
-        make install
-
-        cd "${MYSTARTDIR}" 
-
+	echo "newlib support is only stubbed"
+	exit
 }
-#newlib_stage
+
 musl_stage()
 {
 
@@ -261,41 +244,31 @@ musl_stage()
 
         cd "${MYSTARTDIR}"
 }
-musl_stage
+#musl_stage
 
 uclibc_stage()
-{
+{ 
+	
 
-        # musl
-        tar -xf "${MYSRC}/${MYUCLIBC}.${SUFFIX}"
+	rm -rf ${MYUCLIBC}
+        tar -xf "${MYSRC}/${MYUCLIBC}.${SUFFIX}" 
 
-	#mkdir build-uclibc
-	#cd build-uclibc
 	cd ${MYUCLIBC}
-        
-        #${MYSTARTDIR}/${MYUCLIBC}/configure \
-        #--prefix="${MYPREF}/${MYTARG}" \
-        #--enable-debug \
-        #--enable-optimize \
-        #CROSS_COMPILE="${MYTARG}-" CC="${MYTARG}-gcc"
-	#make defconfig
-	make menuconfig
+	echo "SHARED_LIB_LOADER_PREFIX=\"${prefix}/lib\"" >> .config
+	echo "KERNEL_HEADERS=\"${MYPREF}/${MYTARG}/include/\"" >> .config
+	echo "CONFIG_586=y" >> .config 
+	echo "TARGET_i386=y" >> .config 
+	echo "DEVEL_PREFIX=\"${MYPREF}/\"" >> .config
+	echo "PREFIX=\"${MYPREF}/${MYTARG}\"" >> .config
+	
+	#make
+	#make menuconfig 
+	make CROSS="${MYTARG}-" -j8 
+	#make PREFIX="${MYPREF}/${MYTARG}/lib/" install
+	make install
 
-       	#KERNEL_SOURCE="${MYPREF}/${MYTARG}" \
-	#TARGET_ARCH=x86_64 PREFIX="${MYPREF}/${MYTARG}" \
-	#CROSS_COMPILE="${MYTARG}-" \
-	#CC="${MYTARG}-gcc" \
-	#make "${MYJOBS}"
-
-        make install
-
-        cd "${MYSTARTDIR}"
-
-        # gcc 2
-        if [ ! -e "$MYPREF/${MYTARG}/lib/libc.so" ]
-        then    MYCONF="${MYCONF} --disable-shared "
-        fi
-
+        cd "${MYSTARTDIR}" 
+	rm -rf build2-gcc
         mkdir build2-gcc
         cd build2-gcc
         ${MYSTARTDIR}/${MYGCC}/configure \
@@ -305,12 +278,22 @@ uclibc_stage()
         --disable-libmudflap \
         --disable-libsanitizer \
         --disable-nls \
-        $MYCONF
-
+        $MYCONF 
         make "${MYJOBS}"
-        make install
-
+        make install 
         cd "${MYSTARTDIR}"
 }
+
+
+
+# stages:
+#common_obtain_source_code
+common_clean 
+common_binutils_stage
+common_linux_stage
+common_gcc_stage_one
+#glibc_stage
+#newlib_stage 
+musl_stage
 #uclibc_stage
 
