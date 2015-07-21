@@ -1,15 +1,14 @@
+      
 
-	<====  =  =   = =  ===> ==\   <==== ===>  ===>
-	|| || ||\/|| ||\|| ||   |=/   || || ||==. ||==.
-	====> V    V V   V ===> V `\' ====> <===| <===|
-
-
-
+      #====  =  =   = =  ==== ===> ==\  <==== ==>  ==>
+      #| || ||\/|| ||\||  ||  ||   |=/  || || ||=\ ||=\
+      #===> V    V V   V ==== ===> V `\ ====> <==/ <==/ 
 
 
 Omnicross  Build a musl or glibc based cross compiler.
 	
-(C) Copyright 2015. `Omnicross'. CM Graff et al
+(C) Copyright 2015. `Omnicross'. CM Graff 
+
 
 
 Installation:
@@ -104,6 +103,14 @@ Modifying and understanding the code in Omnicross:
 	
 
 
+
+
+IRC / email:
+	Omnicross has a support channel on freenode #omnicross.
+	I can also be reached at cm0graff@gmail.com.
+
+
+
 TODO:
 	uclibc
 	dietlibc
@@ -139,4 +146,5 @@ Notes:
 	7.7
 
 	uname -a
-	Linux debiah 3.2.0-4-amd64 #1 SMP Debian 3.2.63-2+deb7u1 x86_64 GNU/Linux
+	Linux debiah 3.2.0-4-amd64 #1 SMP Debian 3.2.63-2+deb7u1
+		 x86_64 GNU/Linux
