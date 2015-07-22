@@ -1,22 +1,24 @@
 #!/bin/sh
 
-set -ex
+#set -ex
 
-# aarch64
+# aarch64   glibc
 	#MYTARG="aarch64-linux"
 	#MYLINUXARCH="arm64"
 
-# i586
-	MYTARG="i586-linux"
-	MYLINUXARCH="x86"
+# i586      glibc musl
+	#MYTARG="i586-linux"
+	#MYLINUXARCH="x86"
 
-# x86_64
-	#MYTARG="x86_64-linux"
-	#MYLINUXARCH="x86_64" 
+# x86_64    glibc musl
+	MYTARG="x86_64-linux"
+	MYLINUXARCH="x86_64" 
 
-# i586
+# i386      glibc musl diet
         #MYTARG="i386-linux"
-        #MYLINUXARCH="x86"
+	#MYLINUXARCH="i386"
+
+
 
 MYPREF="$(pwd)/toolchain/"
 MYSRC="$(pwd)/src" 
@@ -37,6 +39,7 @@ MYGLIBC="glibc-2.20"
 
 #MYUCLIBC="uClibc-ng-1.0.4"
 MYUCLIBC="uClibc"
+MYDIET="dietlibc-0.33"
 SUFFIX="tar.xz"
 
 
@@ -117,9 +120,9 @@ common_gcc_stage_one()
         tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}"
 
 	# this patch is only needed for musl
-        #cd "${MYGCC}"
-        #patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
-        #cd "${MYSTARTDIR}"
+        cd "${MYGCC}"
+        patch -p1 < "${MYSTARTDIR}/patches/${MYGCC}-musl.diff"
+        cd "${MYSTARTDIR}"
 
         tar -xf "${MYSRC}/${MYGMP}.${SUFFIX}"
         tar -xf "${MYSRC}/${MYMPFR}.${SUFFIX}"
@@ -209,6 +212,7 @@ musl_stage()
 {
 
         # musl
+	rm -rf ${MYMUSL}
         tar -xf "${MYSRC}/${MYMUSL}.${SUFFIX}"
 
         cd "${MYMUSL}"
@@ -219,15 +223,16 @@ musl_stage()
         CROSS_COMPILE="${MYTARG}-" CC="${MYTARG}-gcc"
 
         make "${MYJOBS}"
-        make install
+        make install 
 
-        cd "${MYSTARTDIR}"
+	cd "${MYSTARTDIR}"
 
         # gcc 2
         if [ ! -e "$MYPREF/${MYTARG}/lib/libc.so" ]
         then    MYCONF="${MYCONF} --disable-shared "
         fi
 
+	rm -rf build2-gcc
         mkdir build2-gcc
         cd build2-gcc
         ${MYSTARTDIR}/${MYGCC}/configure \
@@ -244,29 +249,24 @@ musl_stage()
 
         cd "${MYSTARTDIR}"
 }
-#musl_stage
+
 
 uclibc_stage()
 { 
-	
-
 	rm -rf ${MYUCLIBC}
         tar -xf "${MYSRC}/${MYUCLIBC}.${SUFFIX}" 
-
 	cd ${MYUCLIBC}
-	echo "SHARED_LIB_LOADER_PREFIX=\"${prefix}/lib\"" >> .config
+	echo "SHARED_LIB_LOADER_PREFIX=\"${MYPREF}/\"" >> .config
 	echo "KERNEL_HEADERS=\"${MYPREF}/${MYTARG}/include/\"" >> .config
 	echo "CONFIG_586=y" >> .config 
 	echo "TARGET_i386=y" >> .config 
 	echo "DEVEL_PREFIX=\"${MYPREF}/\"" >> .config
-	echo "PREFIX=\"${MYPREF}/${MYTARG}\"" >> .config
-	
+	#echo "PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config 
 	#make
 	#make menuconfig 
-	make CROSS="${MYTARG}-" -j8 
-	#make PREFIX="${MYPREF}/${MYTARG}/lib/" install
-	make install
-
+	make CROSS="${MYTARG}-" -j8 menuconfig
+	make PREFIX="${MYPREF}/" install
+	#make install 
         cd "${MYSTARTDIR}" 
 	rm -rf build2-gcc
         mkdir build2-gcc
@@ -284,6 +284,22 @@ uclibc_stage()
         cd "${MYSTARTDIR}"
 }
 
+diet_stage()
+{ 
+        rm -rf ${MYDIET}
+        tar -xf "${MYSRC}/${MYDIET}.${SUFFIX}" 
+        cd "${MYDIET}" 
+	make  ARCH=${MYLINUXARCH}  CROSS="${MYTARG}-" all 
+	cp bin-${MYLINUXARCH}/diet "${MYPREF}/bin/" 
+	echo
+	echo "To use dietlibc: "
+	echo "export $PATH"
+	echo
+	echo "And then run:"
+	echo "diet ${MYTARG}-gcc some.c"
+
+	cd "${MYSTARTDIR}"
+}
 
 
 # stages:
@@ -294,6 +310,7 @@ common_linux_stage
 common_gcc_stage_one
 #glibc_stage
 #newlib_stage 
-musl_stage
+#musl_stage
 #uclibc_stage
+diet_stage
 
