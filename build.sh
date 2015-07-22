@@ -1,6 +1,9 @@
-#!/bin/sh
+#!/bin/sh 
 
-set -ex
+#(C) Copyright 2015. `Omnicross'. MIT License, CM Graff
+
+set -ex 
+
 
 # aarch64     	Tested good: glibc
 #	      	Tested bad:  musl
@@ -9,13 +12,13 @@ set -ex
 
 # i586  	Tested good: glibc musl
 #		Tested bad:  dietlibc
-	#MYTARG="i586-linux"
-	#MYLINUXARCH="x86"
+	MYTARG="i586-linux"
+	MYLINUXARCH="x86"
 
 # x86_64 	Tested good: glibc musl dietlibc 
 #               Tested bad:
-	MYTARG="x86_64-linux"
-	MYLINUXARCH="x86_64" 
+	#MYTARG="x86_64-linux"
+	#MYLINUXARCH="x86_64" 
 
 # i386  	Tested good: glibc musl dietlibc
 #               Tested bad:
@@ -23,27 +26,39 @@ set -ex
 	#MYLINUXARCH="i386"
 
 
-
+# Build directory
 MYPREF="$(pwd)/toolchain/"
+
+# Tarballs
 MYSRC="$(pwd)/src" 
+
+# Utility versions / path name component
 MYBINUTILS="binutils-2.25"
 MYGCC="gcc-4.9.2"
 MYGMP="gmp-6.0.0"
 MYMPC="mpc-1.0.2"
 MYMPFR="mpfr-3.1.2" 
-MYSTARTDIR="$(pwd)"
-MYJOBS="-j4"
-#MYLANGS="c,c++" 
-MYLANGS="c"
 MYLINUX="kernel-headers-3.12.6-5" 
+MYSTARTDIR="$(pwd)"
+
+# Parallel make
+MYJOBS="-j4"
+
+# Supprted languages
+MYLANGS="c"
+
+# Add some configure options if you need to
 MYCONF="--disable-multilib --with-multilib-list=" 
-#MYCONF="--with-multilib-list=mx32"
+	#--with-multilib-list=mx32
+	#--with-multilib-list= 
+
+# Possible libc
 MYMUSL="musl-1.1.6"
 MYGLIBC="glibc-2.20" 
-
-#MYUCLIBC="uClibc-ng-1.0.4"
-MYUCLIBC="uClibc"
+MYUCLIBC="uClibc-ng-1.0.4" 
 MYDIET="dietlibc-0.33"
+
+# tarball suffix / compression type
 SUFFIX="tar.xz"
 
 
@@ -51,7 +66,7 @@ export PATH="${MYPREF}/bin:${PATH}"
 mkdir -p ${MYPREF} 
 
 
-common_obtain_source_code()
+common_obtainsource()
 {
         GNU_MIRROR="https://ftp.gnu.org/gnu"
         MUSL_MIRROR="http://www.musl-libc.org/releases"
@@ -294,9 +309,9 @@ dietlibc_stage()
         tar -xf "${MYSRC}/${MYDIET}.${SUFFIX}" 
         cd "${MYDIET}" 
 	# lots of errors, ignore them
-	set +e
+	#set +e
 	make ARCH=${MYLINUXARCH} CROSS="${MYTARG}-" all 
-	#make ARCH=${MYLINUXARCH} DESTDIR=${MYPREF}/dietlibc prefix="" install
+	#make ARCH=${MYLINUXARCH} DESTDIR=${MYPREF}/ prefix="" install
 	
 	cp bin-${MYLINUXARCH}/diet "${MYPREF}/bin/" 
 	echo
@@ -310,13 +325,13 @@ dietlibc_stage()
 
 
 # stages:
-#common_obtain_source_code
-common_clean 
+#common_obtainsource
+common_clean
 common_binutils_stage
 common_linux_stage
 common_gcc_stage_one
 glibc_stage
-#newlib_stage 
+#newlib_stage
 #musl_stage
 #uclibc_stage
 #dietlibc_stage
