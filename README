@@ -5,7 +5,7 @@
       #===> V    V V   V ==== ===> V `\' ====> <==/ <==/ 
 
 
-Omnicross  Build a musl or glibc based cross compiler.
+Omnicross  Build a musl, glibc or dietlibc based cross compiler.
 	
 (C) Copyright 2015. `Omnicross'. MIT License, CM Graff 
 
