@@ -8,7 +8,7 @@ set -ex
 	#MYLINUXARCH="arm64"
 
 # i586  	Tested good: glibc musl
-#		Tested bad:
+#		Tested bad:  dietlibc
 	#MYTARG="i586-linux"
 	#MYLINUXARCH="x86"
 
