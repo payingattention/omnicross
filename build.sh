@@ -1,20 +1,24 @@
 #!/bin/sh
 
-#set -ex
+set -ex
 
-# aarch64   glibc
+# aarch64     	Tested good: glibc
+#	      	Tested bad:  musl
 	#MYTARG="aarch64-linux"
 	#MYLINUXARCH="arm64"
 
-# i586      glibc musl
+# i586  	Tested good: glibc musl
+#		Tested bad:
 	#MYTARG="i586-linux"
 	#MYLINUXARCH="x86"
 
-# x86_64    glibc musl dietlibc
+# x86_64 	Tested good: glibc musl dietlibc 
+#               Tested bad:
 	MYTARG="x86_64-linux"
 	MYLINUXARCH="x86_64" 
 
-# i386      glibc musl dietlibc
+# i386  	Tested good: glibc musl dietlibc
+#               Tested bad:
         #MYTARG="i386-linux"
 	#MYLINUXARCH="i386"
 
@@ -307,13 +311,13 @@ dietlibc_stage()
 
 # stages:
 #common_obtain_source_code
-#common_clean 
-#common_binutils_stage
-#common_linux_stage
-#common_gcc_stage_one
-#glibc_stage
+common_clean 
+common_binutils_stage
+common_linux_stage
+common_gcc_stage_one
+glibc_stage
 #newlib_stage 
 #musl_stage
 #uclibc_stage
-dietlibc_stage
+#dietlibc_stage
 
