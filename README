@@ -91,8 +91,9 @@ Modifying and understanding the code in Omnicross:
 		common_gcc_stage_one
 		#glibc_stage
 		#newlib_stage 
-		#musl_stage
-		uclibc_stage
+		musl_stage
+		#uclibc_stage
+		#dietlibc_stage
 
 
 	

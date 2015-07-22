@@ -10,11 +10,11 @@
 	#MYTARG="i586-linux"
 	#MYLINUXARCH="x86"
 
-# x86_64    glibc musl
+# x86_64    glibc musl dietlibc
 	MYTARG="x86_64-linux"
 	MYLINUXARCH="x86_64" 
 
-# i386      glibc musl diet
+# i386      glibc musl dietlibc
         #MYTARG="i386-linux"
 	#MYLINUXARCH="i386"
 
@@ -77,7 +77,7 @@ common_clean()
          ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} ${MYNEWLIB} \
         build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
         cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
-        rm -rf ${MYMUSL} ${MYUCLIBC}
+        rm -rf ${MYMUSL} ${MYUCLIBC} ${MYDIET}
 	rm -rf build-uclibc
         rm -rf toolchain/
         rm -rf build-binutils/
@@ -284,33 +284,36 @@ uclibc_stage()
         cd "${MYSTARTDIR}"
 }
 
-diet_stage()
+dietlibc_stage()
 { 
         rm -rf ${MYDIET}
         tar -xf "${MYSRC}/${MYDIET}.${SUFFIX}" 
         cd "${MYDIET}" 
-	make  ARCH=${MYLINUXARCH}  CROSS="${MYTARG}-" all 
+	# lots of errors, ignore them
+	set +e
+	make ARCH=${MYLINUXARCH} CROSS="${MYTARG}-" all 
+	#make ARCH=${MYLINUXARCH} DESTDIR=${MYPREF}/dietlibc prefix="" install
+	
 	cp bin-${MYLINUXARCH}/diet "${MYPREF}/bin/" 
 	echo
 	echo "To use dietlibc: "
-	echo "export $PATH"
+	echo "PATH=$PATH"
 	echo
 	echo "And then run:"
-	echo "diet ${MYTARG}-gcc some.c"
-
+	echo "diet ${MYTARG}-gcc some.c" 
 	cd "${MYSTARTDIR}"
 }
 
 
 # stages:
 #common_obtain_source_code
-common_clean 
-common_binutils_stage
-common_linux_stage
-common_gcc_stage_one
+#common_clean 
+#common_binutils_stage
+#common_linux_stage
+#common_gcc_stage_one
 #glibc_stage
 #newlib_stage 
 #musl_stage
 #uclibc_stage
-diet_stage
+dietlibc_stage
 
