@@ -77,14 +77,14 @@ Modifying and understanding the code in Omnicross:
 	If you are building against musl C libraries any functions
 	not prefixed as "common_" or "musl_" should be commented out or
 	controlled by various tests that I or the user/developer might 
-	insert. And likewise for glibc, only functions prefixed "glibc_" 
-	and "common_" should be invoked.
+	insert. And likewise for glibc or dietlibc, only functions prefixed 
+	"*libc_" and "common_" should be invoked.
 	
 	These functions are invoked at the end of the script in a section
 	labeled "stages", it appears as follows, modify it accordingly to 
 	your needs:
 		# stages:
-		#common_obtain_source_code
+		#common_obtainsource
 		common_clean 
 		common_binutils_stage
 		common_linux_stage

@@ -324,15 +324,23 @@ dietlibc_stage()
 }
 
 
+# Run user requested components from cli
+for MYUSERCLIOPTIONS in $@
+do 	"$MYUSERCLIOPTIONS"
+	shift
+	[ "$#" = "0" ] && exit
+done 
+
+
 # stages:
 #common_obtainsource
 common_clean
 common_binutils_stage
 common_linux_stage
 common_gcc_stage_one
-glibc_stage
+#glibc_stage
 #newlib_stage
-#musl_stage
+musl_stage
 #uclibc_stage
 #dietlibc_stage
 
