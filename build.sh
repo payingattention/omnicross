@@ -280,35 +280,21 @@ uclibc_stage()
 	
 	rm -rf ${MYUCLIBC}
         tar -xf "${MYSRC}/${MYUCLIBC}.${SUFFIX}" 
-	cd ${MYUCLIBC}
-	#notes: install to: ?
-	# /home/blakor/cmgraff/omnicross/toolchain/i586-linux/lib/
-	# TARGET_i386=y
-	# CONFIG_586=y
-	# KERNEL_HEADERS="/home/blakor/cmgraff/omnicross/toolchain//i586-linux/include/"
-	# RUNTIME_PREFIX="/home/blakor/cmgraff/omnicross/toolchain/"
-	# DEVEL_PREFIX="/home/blakor/cmgraff/omnicross/toolchain//"
-	#echo "SHARED_LIB_LOADER_PREFIX=\"/lib\"" >> .config
+	cd ${MYUCLIBC} 
+	
+	# echo "SHARED_LIB_LOADER_PREFIX=\"${MYPREF}/${MYTARG}/lib/\"" >> .config 
 	echo "KERNEL_HEADERS=\"${MYPREF}/${MYTARG}/include/\"" >> .config
 	echo "CONFIG_586=y" >> .config 
 	echo "TARGET_i386=y" >> .config 
 	#echo "DEVEL_PREFIX=\"${MYPREF}/\"" >> .config
-	#echo "RUNTIME_PREFIX=\"${MYPREF}/\"" >> .config
-
+	#echo "RUNTIME_PREFIX=\"${MYPREF}/\"" >> .config 
 	echo "DEVEL_PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config
-        echo "RUNTIME_PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config
+        echo "RUNTIME_PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config 
 	
-	
-	#echo "PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config 
-	#make
-	#make menuconfig 
-	make CROSS="${MYTARG}-" -j8 menuconfig
+	make CROSS="${MYTARG}-" -j8 menuconfig 
 
-	
-	#make PREFIX="${MYPREF}/" install
-	make CROSS="${MYTARG}-"  PREFIX="" install
+	make CROSS="${MYTARG}-"  PREFIX="" install 
 
-	#make install 
         cd "${MYSTARTDIR}" 
 
 	rm -rf build2-gcc
