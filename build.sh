@@ -47,7 +47,7 @@ MYJOBS="-j4"
 # Supprted languages
 MYLANGS="c"
 
-# Add some configure options if you need to
+# Add some configuration "./configure" options if you need to
 MYCONF="--disable-multilib --with-multilib-list=" 
 	#--with-multilib-list=mx32
 	#--with-multilib-list= 
@@ -66,7 +66,7 @@ export PATH="${MYPREF}/bin:${PATH}"
 mkdir -p ${MYPREF} 
 
 
-common_obtainsource()
+common_source_stage()
 {
         GNU_MIRROR="https://ftp.gnu.org/gnu"
         MUSL_MIRROR="http://www.musl-libc.org/releases"
@@ -90,20 +90,25 @@ common_obtainsource()
 }
 
 
-common_clean()
+common_clean_stage()
 {
-        rm -rf ${MYBINUTILS} ${MYGCC} ${MYGLIBC} \
-         ${MYLINUX} ${MYMPC} ${MYMPFR} ${MYPREF} ${MYNEWLIB} \
-        build-glibc build-binutils build-gcc gmp-6.0.0 isl gmp \
-        cloog mpc mpfr a.out build-newlib newlib-master logfile.txt
-        rm -rf ${MYMUSL} ${MYUCLIBC} ${MYDIET}
-	rm -rf build-uclibc
-        rm -rf toolchain/
-        rm -rf build-binutils/
-        rm -rf musl-build/
-        rm -rf build-gcc/
-        rm -rf build2-gcc
-        rm -rf a.out
+        rm -rf ${MYBINUTILS}
+	rm -rf ${MYGCC}
+	rm -rf ${MYGLIBC}
+        rm -rf ${MYLINUX}
+	rm -rf ${MYMPC}
+	rm -rf ${MYMPFR}
+	rm -rf ${MYGMP}
+	rm -rf ${MYPREF} 
+	rm -rf ${MYMUSL}
+	rm -rf ${MYUCLIBC}
+	rm -rf ${MYDIET}
+	rm -rf ${MYPREF}
+	rm -rf build-binutils/
+	rm -rf build-gcc/
+	rm -rf build2-gcc
+	rm -rf build-glibc 
+        rm -rf a.out 
 }
 
 
@@ -134,7 +139,7 @@ common_linux_stage()
 
 
 
-common_gcc_stage_one()
+common_gcc_stage()
 {
         tar -xf "${MYSRC}/${MYGCC}.${SUFFIX}"
 
@@ -272,21 +277,40 @@ musl_stage()
 
 uclibc_stage()
 { 
+	
 	rm -rf ${MYUCLIBC}
         tar -xf "${MYSRC}/${MYUCLIBC}.${SUFFIX}" 
 	cd ${MYUCLIBC}
-	echo "SHARED_LIB_LOADER_PREFIX=\"${MYPREF}/\"" >> .config
+	#notes: install to: ?
+	# /home/blakor/cmgraff/omnicross/toolchain/i586-linux/lib/
+	# TARGET_i386=y
+	# CONFIG_586=y
+	# KERNEL_HEADERS="/home/blakor/cmgraff/omnicross/toolchain//i586-linux/include/"
+	# RUNTIME_PREFIX="/home/blakor/cmgraff/omnicross/toolchain/"
+	# DEVEL_PREFIX="/home/blakor/cmgraff/omnicross/toolchain//"
+	#echo "SHARED_LIB_LOADER_PREFIX=\"/lib\"" >> .config
 	echo "KERNEL_HEADERS=\"${MYPREF}/${MYTARG}/include/\"" >> .config
 	echo "CONFIG_586=y" >> .config 
 	echo "TARGET_i386=y" >> .config 
-	echo "DEVEL_PREFIX=\"${MYPREF}/\"" >> .config
+	#echo "DEVEL_PREFIX=\"${MYPREF}/\"" >> .config
+	#echo "RUNTIME_PREFIX=\"${MYPREF}/\"" >> .config
+
+	echo "DEVEL_PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config
+        echo "RUNTIME_PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config
+	
+	
 	#echo "PREFIX=\"${MYPREF}/${MYTARG}/\"" >> .config 
 	#make
 	#make menuconfig 
 	make CROSS="${MYTARG}-" -j8 menuconfig
-	make PREFIX="${MYPREF}/" install
+
+	
+	#make PREFIX="${MYPREF}/" install
+	make CROSS="${MYTARG}-"  PREFIX="" install
+
 	#make install 
         cd "${MYSTARTDIR}" 
+
 	rm -rf build2-gcc
         mkdir build2-gcc
         cd build2-gcc
@@ -297,6 +321,7 @@ uclibc_stage()
         --disable-libmudflap \
         --disable-libsanitizer \
         --disable-nls \
+	--disable-threads \
         $MYCONF 
         make "${MYJOBS}"
         make install 
@@ -315,7 +340,7 @@ dietlibc_stage()
 	
 	cp bin-${MYLINUXARCH}/diet "${MYPREF}/bin/" 
 	echo
-	echo "To use dietlibc: "
+	echo "To use dietlibc cross compiler run:"
 	echo "PATH=$PATH"
 	echo
 	echo "And then run:"
@@ -333,14 +358,14 @@ done
 
 
 # stages:
-#common_obtainsource
-common_clean
+#common_source_stage
+common_clean_stage
 common_binutils_stage
 common_linux_stage
-common_gcc_stage_one
+common_gcc_stage
 #glibc_stage
 #newlib_stage
-musl_stage
-#uclibc_stage
+#musl_stage
+uclibc_stage
 #dietlibc_stage
 
