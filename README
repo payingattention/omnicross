@@ -5,7 +5,7 @@
       #===> V    V V   V ==== ===> V `\' ====> <==/ <==/ 
 
 
-Omnicross  Build a musl, glibc or dietlibc based cross compiler.
+Omnicross  Build a musl, uClibc, glibc or dietlibc based cross compiler.
 	
 (C) Copyright 2015. `Omnicross'. MIT License, CM Graff 
 
@@ -39,6 +39,12 @@ Sparse installation (for slow networks):
 
 	
 
+Notes on efficacy:
+	glibc, musl and deitlibc are working correctly and as intended. However
+	the uClibc second gcc stage is not getting installed correctly and so 
+	will only work with static linking. Fixing this is currently my top
+	priority for omnicross.
+	
 
 
 Modifying and understanding the code in Omnicross:
@@ -113,8 +119,7 @@ IRC / email:
 
 
 TODO:
-	uclibc
-	dietlibc
+	uclibc -- fix dynamic linking with second gcc stage 
 	bsd support with gcc
 	bsd support with clang
 	
